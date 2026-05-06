@@ -40,11 +40,6 @@ const howItWorksSteps = [
 export default function Home() {
   return (
     <div className="relative mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-10">
-      <div className="mb-3 flex justify-end">
-        <Link href="/empresa/acesso" className="rounded-xl border border-[#e7d0ff] bg-white/70 px-3 py-2 text-xs font-semibold text-[#6f4f8f] hover:bg-white">
-          Conta Empresa
-        </Link>
-      </div>
       <section className="ok-fade-in relative overflow-hidden rounded-[2.6rem] border border-[#ebd2ff] bg-gradient-to-br from-white via-[#fff8fe] to-[#f2e4ff]/95 px-5 py-14 shadow-[0_28px_55px_-34px_rgba(128,43,186,0.58)] md:px-10 md:py-20 xl:px-14">
         <span className="ok-blob h-80 w-80 bg-[#ff9fd8]/58" style={{ top: "-22%", left: "-12%" }} />
         <span className="ok-blob h-96 w-96 bg-[#bb72ff]/48" style={{ top: "0%", right: "-14%", animationDelay: "0.8s" }} />
