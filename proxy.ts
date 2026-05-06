@@ -57,7 +57,7 @@ export async function proxy(request: NextRequest) {
 
   let authToken: { email?: string | null } | null = null;
   try {
-    authToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    authToken = await getToken({ req: request, secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET });
   } catch {
     authToken = null;
   }
