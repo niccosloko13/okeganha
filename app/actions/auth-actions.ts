@@ -19,19 +19,15 @@ export async function registerAction(_prevState: ActionState, formData: FormData
   }
 
   const parsed = registerSchema.safeParse({
-    name: formData.get("name"), 
-      email: formData.get("email"), 
-      password: formData.get("password"), 
-      phone: formData.get("phone"), 
-      cpf: formData.get("cpf"), 
-      pixType: formData.get("pixType"), 
-      pixKey: formData.get("pixKey"), 
-      bankName: formData.get("bankName"),
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    phone: formData.get("phone"),
   });
 
   if (!parsed.success) {
     return {
-      ok: false, 
+      ok: false,
       message: "Confira os dados do cadastro.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
@@ -43,25 +39,16 @@ export async function registerAction(_prevState: ActionState, formData: FormData
       return { ok: false, message: "Este e-mail já está em uso." };
     }
 
-    const cpfExists = await db.user.findUnique({ where: { cpf: parsed.data.cpf } });
-    if (cpfExists) {
-      return { ok: false, message: "Este CPF já está cadastrado." };
-    }
-
     const passwordHash = await hashPassword(parsed.data.password);
 
     const user = await db.user.create({
       data: {
-        name: parsed.data.name, 
-      email: parsed.data.email,
-        passwordHash, 
-      phone: parsed.data.phone,
-        cpf: parsed.data.cpf, 
-      pixType: parsed.data.pixType,
-        pixKey: parsed.data.pixKey, 
-      bankName: parsed.data.bankName,
-        onboardingCompleted: true, 
-      status: "ACTIVE",
+        name: parsed.data.name,
+        email: parsed.data.email,
+        passwordHash,
+        phone: parsed.data.phone,
+        onboardingCompleted: false,
+        status: "ACTIVE",
         role: "USER",
       },
     });
@@ -76,7 +63,7 @@ export async function registerAction(_prevState: ActionState, formData: FormData
     throw error;
   }
 
-  redirect("/usuario/dashboard");
+  redirect("/usuario/completar-cadastro");
 }
 
 export async function loginAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -163,6 +150,9 @@ export async function logoutAction() {
 }
 
 export async function googleSignInAction() {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    redirect("/login");
+  }
   await signIn("google", { redirectTo: "/usuario/dashboard" });
 }
 

@@ -9,19 +9,15 @@ const cpfSchema = z
   .refine((value) => value.length === 11, "CPF inválido");
 
 export const registerSchema = z.object({
-  name: z.string().min(3, "Nome precisa ter ao menos 3 caracteres"), email: z.string().email("Email inválido").toLowerCase(), password: z
+  name: z.string().min(3, "Nome precisa ter ao menos 3 caracteres"),
+  email: z.string().email("Email inválido").toLowerCase(),
+  password: z
     .string()
     .min(8, "Senha precisa ter ao menos 8 caracteres")
     .regex(/[A-Z]/, "Senha precisa ter ao menos uma letra maiúscula")
     .regex(/[a-z]/, "Senha precisa ter ao menos uma letra minúscula")
-    .regex(/[0-9]/, "Senha precisa ter ao menos um número"), phone: z.string().min(10, "Telefone inválido"), cpf: cpfSchema,
-  pixType: z.literal("CPF"), pixKey: cpfSchema, bankName: z.enum(BANK_OPTIONS),
-}).superRefine((value, ctx) => {
-  if (value.pixType === "CPF" && value.pixKey !== value.cpf) {
-    ctx.addIssue({
-      path: ["pixKey"], code: z.ZodIssueCode.custom, message: "Para tipo CPF, a chave Pix deve ser o mesmo CPF informado",
-    });
-  }
+    .regex(/[0-9]/, "Senha precisa ter ao menos um número"),
+  phone: z.string().min(10, "Telefone inválido"),
 });
 
 export const loginSchema = z.object({

@@ -2,9 +2,18 @@ import { googleSignInAction } from "@/app/actions/auth-actions";
 
 type GoogleSignInButtonProps = {
   text?: string;
+  enabled?: boolean;
 };
 
-export function GoogleSignInButton({ text = "Entrar com Google" }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ text = "Entrar com Google", enabled = true }: GoogleSignInButtonProps) {
+  if (!enabled) {
+    return (
+      <div className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#efe3fc] bg-[#f8f2ff] px-4 py-3 text-sm font-semibold text-[#8a6cab]">
+        Google em configuração
+      </div>
+    );
+  }
+
   return (
     <form action={googleSignInAction}>
       <button
