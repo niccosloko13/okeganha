@@ -1,0 +1,567 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  PENDING
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  COMPANY
+}
+
+enum PixType {
+  CPF
+}
+
+enum CampaignStatus {
+  ACTIVE
+  PAUSED
+  FINISHED
+}
+
+enum CampaignReviewStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  TIKTOK
+  FACEBOOK
+  YOUTUBE
+  GOOGLE
+  LOCAL
+  OTHER
+}
+
+enum CampaignObjective {
+  WATCH
+  LIKE
+  COMMENT
+  FOLLOW
+  REVIEW
+  CHECKIN
+  VISIT
+  WATCH_VIDEO
+  VIEW_STORY
+  LIKE_POST
+  COMMENT_POST
+  FOLLOW_PROFILE
+  REVIEW_BUSINESS
+  CHECKIN_BUSINESS
+  VISIT_LOCAL
+  OTHER
+}
+
+enum TaskType {
+  VISIT
+  SHARE
+  REVIEW
+  CONTENT
+  CHECKIN
+  OTHER
+}
+
+enum TaskStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum ProofType {
+  TEXT
+  IMAGE
+  LINK
+  TEXT_AND_IMAGE
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+  WITHDRAWAL_HOLD
+  WITHDRAWAL_PAID
+  ADJUSTMENT
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum IdentityVerificationStatus {
+  NOT_VERIFIED
+  PENDING
+  VERIFIED
+}
+
+enum CompanyPlan {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum CompanyPlanStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIAL
+}
+
+enum CompanyStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  BLOCKED
+}
+
+enum CompanyTokenLedgerType {
+  MONTHLY_GRANT
+  CAMPAIGN_CREATION
+  CAMPAIGN_ACTION
+  BONUS
+  MANUAL_ADJUSTMENT
+  UPGRADE
+  REFUND
+}
+
+enum CompanySocialPostSource {
+  MANUAL
+  PUBLIC_LINK
+  API_FUTURE
+}
+
+enum CompanySocialPostStatus {
+  ACTIVE
+  HIDDEN
+}
+
+enum UserSocialAccountStatus {
+  CONNECTED
+  PENDING
+  DISCONNECTED
+}
+
+enum UserActivityType {
+  LOGIN
+  LOGOUT
+  VIEW_CAMPAIGN
+  OPEN_TASK
+  OPEN_EXTERNAL_CONTENT
+  SUBMIT_PROOF
+  REQUEST_WITHDRAWAL
+  PROFILE_UPDATE
+  SOCIAL_ACCOUNT_UPDATE
+  SUSPICIOUS_ACTIVITY
+  ACCOUNT_BLOCKED
+}
+
+enum UserRiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskExternalVerificationStatus {
+  VALID
+  REMOVED
+  NOT_FOUND
+  SUSPICIOUS
+}
+
+enum WithdrawalRiskDecision {
+  ALLOW
+  REVIEW
+  BLOCK
+}
+
+model User {
+  id              String                @id @default(cuid())
+  name            String
+  email           String                @unique
+  passwordHash    String
+  phone           String
+  cpf             String               @unique
+  pixKey          String
+  pixType         PixType               @default(CPF)
+  bankName        String
+  onboardingCompleted Boolean           @default(false)
+  identityVerificationStatus IdentityVerificationStatus @default(NOT_VERIFIED)
+  status          UserStatus            @default(ACTIVE)
+  role            UserRole              @default(USER)
+  companyId       String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  company         Company              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  taskSubmissions TaskSubmission[]
+  walletTxs       WalletTransaction[]
+  withdrawals     WithdrawalRequest[]
+  impersonationLogs AdminImpersonationLog[] @relation("AdminLogs")
+  auditLogs       AdminAuditLog[]
+  internalNotes   UserInternalNote[] @relation("UserNotes")
+  authoredNotes   UserInternalNote[] @relation("AdminNotes")
+  socialAccounts  UserSocialAccount[]
+  activityLogs    UserActivityLog[]
+  riskEvents      UserRiskEvent[]
+  taskSessions    TaskSession[]
+  devices         UserDevice[]
+  withdrawalRiskChecks WithdrawalRiskCheck[]
+}
+
+model Campaign {
+  id                String           @id @default(cuid())
+  companyId         String
+  title             String
+  description       String
+  companyName       String
+  city              String
+  neighborhood      String
+  category          String
+  socialPlatform    SocialPlatform     @default(LOCAL)
+  contentUrl        String
+  objective         CampaignObjective  @default(VISIT)
+  rewardPerTask     Int
+  dailyLimitPerUser Int
+  totalBudget       Int
+  status            CampaignStatus   @default(ACTIVE)
+  reviewStatus      CampaignReviewStatus @default(DRAFT)
+  submittedForReviewAt DateTime
+  reviewedAt        DateTime
+  startDate         DateTime
+  endDate           DateTime
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  company           Company         @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  tasks             Task[]
+  taskSubmissions   TaskSubmission[]
+  activityLogs      UserActivityLog[]
+  taskSessions      TaskSession[]
+
+  @@index([companyId])
+  @@index([status, city, category])
+}
+
+model Task {
+  id            String           @id @default(cuid())
+  campaignId    String
+  title         String
+  description   String
+  instructions  String
+  reward        Int
+  type          TaskType
+  externalUrl   String
+  proofType     ProofType         @default(TEXT_AND_IMAGE)
+  requiredWatchSeconds Int
+  status        TaskStatus       @default(ACTIVE)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  campaign      Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  submissions   TaskSubmission[]
+  activityLogs  UserActivityLog[]
+  taskSessions  TaskSession[]
+
+  @@index([campaignId, status])
+}
+
+model TaskSubmission {
+  id              String           @id @default(cuid())
+  userId          String
+  taskId          String
+  campaignId      String
+  proofText       String
+  proofImageUrl   String
+  status          SubmissionStatus @default(PENDING)
+  rewardAmount    Int
+  rejectionReason String
+  submittedAt     DateTime         @default(now())
+  reviewedAt      DateTime
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task            Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  campaign        Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  externalVerifications TaskExternalVerification[]
+
+  @@index([userId, taskId, submittedAt])
+  @@index([campaignId, userId, submittedAt])
+  @@index([status])
+}
+
+model WalletTransaction {
+  id          String                @id @default(cuid())
+  userId      String
+  type        WalletTransactionType
+  amount      Int
+  description String
+  referenceId String
+  createdAt   DateTime              @default(now())
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@unique([type, referenceId])
+}
+
+model WithdrawalRequest {
+  id              String           @id @default(cuid())
+  userId          String
+  amount          Int
+  pixKey          String
+  status          WithdrawalStatus @default(PENDING)
+  requestedAt     DateTime         @default(now())
+  reviewedAt      DateTime
+  paidAt          DateTime
+  rejectionReason String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  riskChecks      WithdrawalRiskCheck[]
+
+  @@index([userId, status, requestedAt])
+}
+
+model Company {
+  id                   String                @id @default(cuid())
+  publicId             String                @unique
+  legalName            String
+  tradeName            String
+  cnpj                 String                @unique
+  responsibleName      String
+  responsibleWhatsapp  String
+  email                String                @unique
+  status               CompanyStatus         @default(PENDING)
+  passwordHash         String
+  phone                String
+  city                 String
+  neighborhood         String
+  category             String
+  instagramUrl         String
+  facebookUrl          String
+  tiktokUrl            String
+  googleBusinessUrl    String
+  websiteUrl           String
+  approvedAt           DateTime
+  rejectedAt           DateTime
+  rejectionReason      String
+  plan                 CompanyPlan           @default(FREE)
+  planStatus           CompanyPlanStatus     @default(TRIAL)
+  tokensBalance        Int                   @default(0)
+  tokensMonthlyLimit   Int                   @default(0)
+  tokensUsedThisCycle  Int                   @default(0)
+  billingCycleStart    DateTime
+  billingCycleEnd      DateTime
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  users                User[]
+  campaigns            Campaign[]
+  socialPosts          CompanySocialPost[]
+  tokenLedger          CompanyTokenLedger[]
+  impersonationLogs    AdminImpersonationLog[] @relation("CompanyLogs")
+}
+
+model CompanyTokenLedger {
+  id          String                 @id @default(cuid())
+  companyId   String
+  type        CompanyTokenLedgerType
+  amount      Int
+  description String
+  referenceId String
+  createdAt   DateTime               @default(now())
+  company     Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+}
+
+model CompanySocialPost {
+  id              String                  @id @default(cuid())
+  companyId       String
+  platform        SocialPlatform
+  url             String
+  title           String
+  description     String
+  thumbnailUrl    String
+  durationSeconds Int
+  publishedAt     DateTime
+  detectedAt      DateTime                @default(now())
+  source          CompanySocialPostSource @default(MANUAL)
+  status          CompanySocialPostStatus @default(ACTIVE)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  company         Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, platform, status])
+}
+
+model AdminImpersonationLog {
+  id              String   @id @default(cuid())
+  adminId         String
+  companyId       String
+  startedAt       DateTime @default(now())
+  endedAt         DateTime
+  durationSeconds Int
+  admin           User     @relation("AdminLogs", fields: [adminId], references: [id], onDelete: Cascade)
+  company         Company  @relation("CompanyLogs", fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, startedAt])
+  @@index([companyId, startedAt])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  targetType  String
+  targetId    String
+  action      String
+  description String
+  metadata    Json
+  createdAt   DateTime @default(now())
+  admin       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId, createdAt])
+}
+
+model UserInternalNote {
+  id        String   @id @default(cuid())
+  userId    String
+  adminId   String
+  note      String
+  createdAt DateTime @default(now())
+  user      User     @relation("UserNotes", fields: [userId], references: [id], onDelete: Cascade)
+  admin     User     @relation("AdminNotes", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UserSocialAccount {
+  id          String                  @id @default(cuid())
+  userId      String
+  platform    SocialPlatform
+  profileUrl  String
+  username    String
+  status      UserSocialAccountStatus @default(CONNECTED)
+  connectedAt DateTime
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId, status])
+}
+
+model UserActivityLog {
+  id        String           @id @default(cuid())
+  userId    String
+  type      UserActivityType
+  sessionId String
+  deviceId  String
+  campaignId String
+  taskId    String
+  interactionType String
+  durationSeconds Int
+  focusLossCount Int
+  ipAddress String
+  userAgent String
+  metadata  Json
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   TaskSession     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  device    UserDevice      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  campaign  Campaign        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  task      Task            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, type, createdAt])
+  @@index([sessionId, createdAt])
+  @@index([deviceId, createdAt])
+}
+
+model UserRiskEvent {
+  id        String           @id @default(cuid())
+  userId    String
+  severity  UserRiskSeverity
+  reason    String
+  metadata  Json
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, severity, createdAt])
+}
+
+model TaskSession {
+  id              String   @id @default(cuid())
+  userId          String
+  taskId          String
+  campaignId      String
+  startedAt       DateTime @default(now())
+  requiredDuration Int
+  activeDuration  Int      @default(0)
+  lastHeartbeat   DateTime
+  focusLossCount  Int      @default(0)
+  isCompleted     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task            Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  activityLogs    UserActivityLog[]
+
+  @@index([userId, taskId, createdAt])
+  @@index([userId, isCompleted, createdAt])
+}
+
+model UserDevice {
+  id              String   @id @default(cuid())
+  userId          String
+  fingerprintHash String
+  userAgent       String
+  ipAddress       String
+  firstSeen       DateTime @default(now())
+  lastSeen        DateTime @default(now())
+  isSuspicious    Boolean  @default(false)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityLogs    UserActivityLog[]
+
+  @@unique([userId, fingerprintHash])
+  @@index([fingerprintHash, lastSeen])
+}
+
+model TaskExternalVerification {
+  id           String   @id @default(cuid())
+  submissionId String
+  status       TaskExternalVerificationStatus
+  checkedAt    DateTime
+  details      Json
+  submission   TaskSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, checkedAt])
+}
+
+model WithdrawalRiskCheck {
+  id          String   @id @default(cuid())
+  userId      String
+  withdrawalId String
+  score       Int
+  decision    WithdrawalRiskDecision
+  reasons     Json
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  withdrawal  WithdrawalRequest @relation(fields: [withdrawalId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([decision, createdAt])
+}

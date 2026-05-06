@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+:root {
+  --okBlueLight: #f4dcff;
+  --okBlue: #cf4dff;
+  --okBlueDark: #7c2eb7;
+  --okLilac: #cda8ff;
+  --okPink: #ff7ac6;
+  --okBg: #fbf4ff;
+  --okCard: #ffffff;
+  --okBorder: #e7d0ff;
+  --foreground: #442061;
+}
+
+@theme {
+  --color-okBlueLight: #f4dcff;
+  --color-okBlue: #cf4dff;
+  --color-okBlueDark: #7c2eb7;
+  --color-okLilac: #cda8ff;
+  --color-okPink: #ff7ac6;
+  --color-okBg: #fbf4ff;
+  --color-okCard: #ffffff;
+  --color-okBorder: #e7d0ff;
+}
+
+body {
+  background:
+    radial-gradient(circle at 8% 4%, #ffe0f2 0%, transparent 38%),
+    radial-gradient(circle at 94% 2%, #eadbff 0%, transparent 34%),
+    #f8efff;
+  color: var(--foreground);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-feature-settings: "ss01" on, "cv01" on;
+}
+
+.ok-card {
+  @apply rounded-3xl border border-okBorder bg-okCard shadow-[0_14px_30px_-20px_rgba(96,39,145,0.42)] transition duration-300;
+}
+
+.ok-card-soft {
+  @apply rounded-2xl border border-okBorder/90 bg-okBlueLight/45;
+}
+
+.ok-topbar {
+  background: linear-gradient(135deg, #ff67bc 0%, #b248ff 58%, #7a2fbc 100%);
+  @apply rounded-3xl border border-[#c776ff] text-white shadow-[0_14px_30px_-14px_rgba(110,33,163,0.75)];
+}
+
+.ok-btn-primary {
+  background-image: linear-gradient(135deg, #ff4fae 0%, #cc46ff 52%, #7a2fbc 100%);
+  background-size: 160% 160%;
+  @apply rounded-2xl border border-[#d177ff] px-5 py-3 font-semibold text-white shadow-[0_10px_24px_-12px_rgba(149,43,219,0.85)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_28px_-12px_rgba(149,43,219,0.9)];
+}
+
+.ok-btn-primary:hover {
+  animation: okGradientShift 0.9s ease forwards;
+}
+
+.ok-btn-secondary {
+  @apply rounded-xl border border-okBorder bg-white px-4 py-2 font-semibold text-okBlueDark transition hover:-translate-y-0.5 hover:bg-okBlueLight/65;
+}
+
+.ok-input {
+  @apply w-full rounded-xl border border-okBorder bg-white px-3 py-2 text-[#512a75] outline-none ring-0 transition focus:border-okBlue focus:bg-okBlueLight/35;
+}
+
+.ok-label {
+  @apply mb-1 block text-sm font-medium text-[#6f4f8f];
+}
+
+.ok-badge {
+  @apply inline-flex rounded-full border border-[#ffc6e5] bg-[#ffe7f5] px-2.5 py-1 text-xs font-semibold text-[#b23f8a];
+}
+
+.ok-hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+.ok-card-premium {
+  position: relative;
+  overflow: hidden;
+}
+
+.ok-card-premium::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.24) 40%, transparent 70%);
+  transform: translateX(-120%);
+  animation: okShine 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.ok-pulse {
+  animation: okPulse 1.9s ease-in-out infinite;
+}
+
+.ok-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(34px);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: okBlobFloat 12s ease-in-out infinite alternate;
+}
+
+.ok-fade-up {
+  animation: okFadeUp 0.6s ease-out both;
+}
+
+.ok-fade-in {
+  animation: okFadeIn 0.55s ease-out both;
+}
+
+.ok-fade-delay-1 {
+  animation-delay: 0.12s;
+}
+
+.ok-fade-delay-2 {
+  animation-delay: 0.24s;
+}
+
+.ok-fade-delay-3 {
+  animation-delay: 0.36s;
+}
+
+@keyframes okFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes okFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes okGradientShift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes okPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.025);
+  }
+}
+
+@keyframes okShine {
+  0%, 18% {
+    transform: translateX(-120%);
+  }
+  45%, 100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes okBlobFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  100% {
+    transform: translateY(-18px) translateX(10px) scale(1.08);
+  }
+}
+
+@keyframes okHeroFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.01);
+  }
+}
