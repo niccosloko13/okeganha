@@ -121,31 +121,63 @@ export async function logUserActivity(
   metadata: Record<string, unknown> = {},
 ): Promise<void> {
   if (!userId) return;
-  const req = await resolveRequestMeta();
-  const sessionId = typeof metadata.sessionId === "string" ? metadata.sessionId : null;
-  const deviceId = typeof metadata.deviceId === "string" ? metadata.deviceId : null;
-  const campaignId = typeof metadata.campaignId === "string" ? metadata.campaignId : null;
-  const taskId = typeof metadata.taskId === "string" ? metadata.taskId : null;
-  const interactionType = typeof metadata.interactionType === "string" ? metadata.interactionType : null;
-  const durationSeconds = typeof metadata.durationSeconds === "number" ? metadata.durationSeconds : null;
-  const focusLossCount = typeof metadata.focusLossCount === "number" ? metadata.focusLossCount : null;
+  try {
+    const req = await resolveRequestMeta();
+    const sessionIdRaw = typeof metadata.sessionId === "string" ? metadata.sessionId : null;
+    const deviceIdRaw = typeof metadata.deviceId === "string" ? metadata.deviceId : null;
+    const campaignIdRaw = typeof metadata.campaignId === "string" ? metadata.campaignId : null;
+    const taskIdRaw = typeof metadata.taskId === "string" ? metadata.taskId : null;
+    const interactionType = typeof metadata.interactionType === "string" ? metadata.interactionType : null;
+    const durationSeconds = typeof metadata.durationSeconds === "number" ? metadata.durationSeconds : null;
+    const focusLossCount = typeof metadata.focusLossCount === "number" ? metadata.focusLossCount : null;
 
-  await db.userActivityLog.create({
-    data: {
-      userId,
-      type,
-      sessionId: sessionId ?? "",
-      deviceId: deviceId ?? "",
-      campaignId: campaignId ?? "",
-      taskId: taskId ?? "",
-      interactionType: interactionType ?? "",
-      durationSeconds: durationSeconds ?? 0,
-      focusLossCount: focusLossCount ?? 0,
-      ipAddress: req.ipAddress ?? "",
-      userAgent: req.userAgent ?? "",
-      metadata: safeObject(metadata) ?? Prisma.JsonNull,
-    },
-  });
+    const [sessionId, deviceId, campaignId, taskId] = await Promise.all([
+      sessionIdRaw
+        ? db.taskSession.findUnique({ where: { id: sessionIdRaw }, select: { id: true } }).then((x) => x?.id ?? null)
+        : db.taskSession.findFirst({ where: { userId }, orderBy: { createdAt: "desc" }, select: { id: true } }).then((x) => x?.id ?? null),
+      deviceIdRaw
+        ? db.userDevice.findUnique({ where: { id: deviceIdRaw }, select: { id: true } }).then((x) => x?.id ?? null)
+        : db.userDevice.findFirst({ where: { userId }, orderBy: { lastSeen: "desc" }, select: { id: true } }).then((x) => x?.id ?? null),
+      campaignIdRaw
+        ? db.campaign.findUnique({ where: { id: campaignIdRaw }, select: { id: true } }).then((x) => x?.id ?? null)
+        : db.campaign.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }).then((x) => x?.id ?? null),
+      taskIdRaw
+        ? db.task.findUnique({ where: { id: taskIdRaw }, select: { id: true } }).then((x) => x?.id ?? null)
+        : db.task.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }).then((x) => x?.id ?? null),
+    ]);
+
+    // Fail-safe: antifraude nunca deve derrubar auth/onboarding.
+    if (!sessionId || !deviceId || !campaignId || !taskId) {
+      console.error("[anti-fraud] skip logUserActivity: unresolved FK", {
+        userId,
+        type,
+        hasSession: Boolean(sessionId),
+        hasDevice: Boolean(deviceId),
+        hasCampaign: Boolean(campaignId),
+        hasTask: Boolean(taskId),
+      });
+      return;
+    }
+
+    await db.userActivityLog.create({
+      data: {
+        userId,
+        type,
+        sessionId,
+        deviceId,
+        campaignId,
+        taskId,
+        interactionType: interactionType ?? "",
+        durationSeconds: durationSeconds ?? 0,
+        focusLossCount: focusLossCount ?? 0,
+        ipAddress: req.ipAddress ?? "",
+        userAgent: req.userAgent ?? "",
+        metadata: safeObject(metadata) ?? Prisma.JsonNull,
+      },
+    });
+  } catch (error) {
+    console.error("[anti-fraud] logUserActivity failed (non-blocking)", { userId, type, error });
+  }
 }
 
 export async function addRiskEvent(
@@ -280,22 +312,35 @@ export async function blockUserForFraud(userId: string, reason: string): Promise
   await db.$transaction(async (tx) => {
     await tx.user.update({ where: { id: userId }, data: { status: "BLOCKED" } });
     await tx.userRiskEvent.create({ data: { userId, severity: "CRITICAL", reason, metadata: Prisma.JsonNull } });
-    await tx.userActivityLog.create({
-      data: {
-        userId,
-        type: "ACCOUNT_BLOCKED",
-        sessionId: "",
-        deviceId: "",
-        campaignId: "",
-        taskId: "",
-        interactionType: "",
-        durationSeconds: 0,
-        focusLossCount: 0,
-        ipAddress: "",
-        userAgent: "",
-        metadata: safeObject({ reason }) ?? Prisma.JsonNull,
-      },
-    });
+    try {
+      const [session, device, campaign, task] = await Promise.all([
+        tx.taskSession.findFirst({ where: { userId }, orderBy: { createdAt: "desc" }, select: { id: true } }),
+        tx.userDevice.findFirst({ where: { userId }, orderBy: { lastSeen: "desc" }, select: { id: true } }),
+        tx.campaign.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
+        tx.task.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } }),
+      ]);
+
+      if (session?.id && device?.id && campaign?.id && task?.id) {
+        await tx.userActivityLog.create({
+          data: {
+            userId,
+            type: "ACCOUNT_BLOCKED",
+            sessionId: session.id,
+            deviceId: device.id,
+            campaignId: campaign.id,
+            taskId: task.id,
+            interactionType: "",
+            durationSeconds: 0,
+            focusLossCount: 0,
+            ipAddress: "",
+            userAgent: "",
+            metadata: safeObject({ reason }) ?? Prisma.JsonNull,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("[anti-fraud] ACCOUNT_BLOCKED activity log failed (non-blocking)", { userId, error });
+    }
   });
 
   const store = await cookies();

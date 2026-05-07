@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DailyRewardCard, EnergyBar, GamificationShell, LevelBadge, ProfileCard, RankingCard, RewardChest, StatsCard, WalletCard, XPBar } from "@/components/gamification";
+import { PremiumStateCard } from "@/components/gamification/PremiumStateCard";
 import { requireRegularUser } from "@/lib/auth";
 import { getWalletAvailableBalance } from "@/lib/campaign-rules";
 import { db } from "@/lib/db";
@@ -16,7 +17,7 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <GamificationShell title="Game Hub" subtitle="Sua jornada gamificada no OKEGANHA.">
+    <GamificationShell title="Inicio" subtitle="Continue evoluindo e ganhe recompensas.">
       <section className="grid gap-3 md:grid-cols-3">
         <div className="md:col-span-2 rounded-3xl border border-[#6f45a3] bg-[#1a1030]/85 p-4 backdrop-blur-md md:p-5">
           <div className="mb-3 flex items-center justify-between"><ProfileCard name={user.name} /><LevelBadge level={user.level} /></div>
@@ -28,8 +29,8 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <StatsCard label="Campanhas" value={String(availableCampaigns)} />
-        <StatsCard label="Pendentes" value={String(pendingTasks)} />
+        <StatsCard label="Missoes ativas" value={String(availableCampaigns)} />
+        <StatsCard label="Em analise" value={String(pendingTasks)} />
         <StatsCard label="Aprovadas" value={String(approvedTasks)} />
       </section>
 
@@ -37,6 +38,11 @@ export default async function DashboardPage() {
         <DailyRewardCard />
         <RewardChest />
         <RankingCard />
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2">
+        <PremiumStateCard title="Missao concluida" description="Sua ultima missao foi enviada e esta em analise." type="review" />
+        <PremiumStateCard title="Perfil verificado" description={user.isVerifiedProfile ? "Status premium ativo." : "Complete etapas para desbloquear beneficios."} type={user.isVerifiedProfile ? "completed" : "profile_incomplete"} />
       </section>
     </GamificationShell>
   );

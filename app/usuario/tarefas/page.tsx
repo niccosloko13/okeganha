@@ -1,13 +1,12 @@
 import Link from "next/link";
 
-import { TaskCard } from "@/components/tarefas/TaskCard";
-import { UserShell } from "@/components/layout/UserShell";
+import { GamificationShell, MissionCard, StatsCard } from "@/components/gamification";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { db } from "@/lib/db";
 import { requireRegularUser } from "@/lib/auth";
 
 const tabs = [
-  { key: "PENDING", label: "Pendentes" },
+  { key: "PENDING", label: "Em analise" },
   { key: "APPROVED", label: "Aprovadas" },
   { key: "REJECTED", label: "Reprovadas" },
 ] as const;
@@ -19,50 +18,45 @@ type PageProps = {
 export default async function TarefasPage({ searchParams }: PageProps) {
   const user = await requireRegularUser();
   const params = await searchParams;
-  const status = typeof params.status === "string" ? params.status  : "PENDING";
+  const status = typeof params.status === "string" ? params.status : "PENDING";
 
   const submissions = await db.taskSubmission.findMany({
-    where: {
-      userId: user.id, status: status === "APPROVED" || status === "REJECTED" ? status  : "PENDING",
-    },
-    include: {
-      campaign: { select: { title: true } },
-      task: { select: { title: true } },
-    },
+    where: { userId: user.id, status: status === "APPROVED" || status === "REJECTED" ? status : "PENDING" },
+    include: { campaign: { select: { title: true } }, task: { select: { title: true } } },
     orderBy: { submittedAt: "desc" },
   });
 
   return (
-    <UserShell title="Minhas tarefas" subtitle="Acompanhe envios e aprovações.">
-      <div className="ok-card ok-fade-up flex gap-2 overflow-x-auto p-2">
+    <GamificationShell title="Missoes" subtitle="Acompanhe status das suas missoes enviadas.">
+      <section className="grid gap-3 md:grid-cols-3">
+        <StatsCard label="Pendentes" value={String(submissions.filter((s) => s.status === "PENDING").length)} />
+        <StatsCard label="Aprovadas" value={String(submissions.filter((s) => s.status === "APPROVED").length)} />
+        <StatsCard label="Reprovadas" value={String(submissions.filter((s) => s.status === "REJECTED").length)} />
+      </section>
+
+      <div className="flex gap-2 overflow-x-auto rounded-2xl border border-[#6f45a3] bg-[#1a1030]/85 p-2">
         {tabs.map((tab) => (
-          <Link
-            key={tab.key}
-            href={`/usuario/tarefasstatus=${tab.key}`}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold ${status === tab.key ? "bg-okBlue text-white" : "text-okBlueDark hover:bg-okBlueLight/50"}`}
-          >
+          <Link key={tab.key} href={`/usuario/tarefas?status=${tab.key}`} className={`rounded-xl px-4 py-2 text-sm font-semibold ${status === tab.key ? "bg-gradient-to-r from-[#ff4fb0] to-[#7a2fbc] text-white" : "text-[#dbc6f5] hover:bg-white/10"}`}>
             {tab.label}
           </Link>
         ))}
       </div>
-      <section className="space-y-2 ok-fade-up ok-fade-delay-1">
+
+      <section className="space-y-3">
         {submissions.length === 0 ? (
-          <EmptyState title="Nenhuma tarefa aqui" description="Envie novas tarefas para ver seu histórico." />
+          <EmptyState title="Nenhuma missao aqui" description="Conclua novas missoes para ver seu historico." />
         ) : (
           submissions.map((submission) => (
-            <TaskCard
+            <MissionCard
               key={submission.id}
-              campaign={submission.campaign.title}
-              task={submission.task.title}
-              value={submission.rewardAmount}
-              status={submission.status}
-              submittedAt={submission.submittedAt}
-              rejectionReason={submission.rejectionReason}
+              title={`${submission.task.title} - ${submission.campaign.title}`}
+              reward={`Recompensa: R$ ${(submission.rewardAmount / 100).toFixed(2)}`}
+              href={`/usuario/tarefas/${submission.taskId}`}
+              rarity={submission.status === "APPROVED" ? "EPIC" : submission.status === "PENDING" ? "RARE" : "COMMON"}
             />
           ))
         )}
       </section>
-    </UserShell>
+    </GamificationShell>
   );
 }
-
