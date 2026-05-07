@@ -125,7 +125,7 @@ export async function submitTaskProofAction(_prevState: ActionState, formData: F
     data: {
       userId: user.id, taskId: task.id,
       campaignId: task.campaignId, proofText: parsed.data.proofText,
-      proofImageUrl: parsed.data.proofImageUrl || null, rewardAmount: task.reward, status: "PENDING",
+      proofImageUrl: parsed.data.proofImageUrl || "", rewardAmount: task.reward, status: "PENDING", rejectionReason: "", reviewedAt: new Date(0),
     },
   });
   await logUserActivity(user.id, "SUBMIT_PROOF", { taskId: task.id, campaignId: task.campaignId });
@@ -405,11 +405,11 @@ export async function upsertUserSocialAccountAction(_prevState: ActionState, for
       },
     },
     update: {
-      profileUrl: parsed.data.profileUrl, username: parsed.data.username || null, status: "CONNECTED", connectedAt: new Date(),
+      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "CONNECTED", connectedAt: new Date(),
     },
     create: {
       userId: user.id, platform: parsed.data.platform,
-      profileUrl: parsed.data.profileUrl, username: parsed.data.username || null, status: "CONNECTED", connectedAt: new Date(),
+      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "CONNECTED", connectedAt: new Date(),
     },
   });
   await logUserActivity(user.id, "SOCIAL_ACCOUNT_UPDATE", { platform: parsed.data.platform });

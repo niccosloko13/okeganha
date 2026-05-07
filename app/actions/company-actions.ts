@@ -13,11 +13,11 @@ import { hashPassword } from "@/lib/auth";
 import type { ActionState } from "@/types";
 
 const companyLoginSchema = z.object({
-  email: z.string().email("E-mail inválido").toLowerCase(), password: z.string().min(1, "Informe a senha"),
+  email: z.string().email("E-mail invalido").toLowerCase(), password: z.string().min(1, "Informe a senha"),
 });
 
 const companyRegisterSchema = z.object({
-  tradeName: z.string().trim().min(2, "Informe o nome fantasia."), legalName: z.string().trim().min(2, "Informe a razão social."), cnpj: z.string().trim(), responsibleName: z.string().trim().min(2, "Informe o responsável."), responsibleWhatsapp: z.string().trim(), email: z.string().email("E-mail inválido.").toLowerCase(), password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."), city: z.string().trim().min(2, "Informe a cidade."), neighborhood: z.string().trim().min(2, "Informe o bairro."), category: z.string().trim().min(2, "Informe a categoria."), instagramUrl: z.string().url("URL inválida.").optional().or(z.literal("")), tiktokUrl: z.string().url("URL inválida.").optional().or(z.literal("")), facebookUrl: z.string().url("URL inválida.").optional().or(z.literal("")), googleBusinessUrl: z.string().url("URL inválida.").optional().or(z.literal("")), websiteUrl: z.string().url("URL inválida.").optional().or(z.literal("")),
+  tradeName: z.string().trim().min(2, "Informe o nome fantasia."), legalName: z.string().trim().min(2, "Informe a razao social."), cnpj: z.string().trim(), responsibleName: z.string().trim().min(2, "Informe o responsavel."), responsibleWhatsapp: z.string().trim(), email: z.string().email("E-mail invalido.").toLowerCase(), password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."), city: z.string().trim().min(2, "Informe a cidade."), neighborhood: z.string().trim().min(2, "Informe o bairro."), category: z.string().trim().min(2, "Informe a categoria."), instagramUrl: z.string().url("URL invalida.").optional().or(z.literal("")), tiktokUrl: z.string().url("URL invalida.").optional().or(z.literal("")), facebookUrl: z.string().url("URL invalida.").optional().or(z.literal("")), googleBusinessUrl: z.string().url("URL invalida.").optional().or(z.literal("")), websiteUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
 });
 
 function digitsOnly(value: string) {
@@ -35,15 +35,15 @@ const submitReviewSchema = z.object({
 function objectiveTemplate(objective: z.infer<typeof companyCampaignSchema>["objective"]) {
   if (objective === "WATCH_VIDEO" || objective === "VIEW_STORY") {
     return {
-      title: "Assistir conteúdo da campanha", description: "Assista ao conteúdo e envie comprovação válida.",
-      instructions: "1. Abra o conteúdo.\n2. Assista integralmente.\n3. Envie prova real.", type: "CONTENT" as const,
+      title: "Assistir conteudo da campanha", description: "Assista ao conteudo e envie comprovacao valida.",
+      instructions: "1. Abra o conteudo.\n2. Assista integralmente.\n3. Envie prova real.", type: "CONTENT" as const,
       proofType: "LINK" as const, requiredWatchSeconds: 30,
     };
   }
 
   if (objective === "FOLLOW_PROFILE") {
     return {
-      title: "Seguir perfil oficial", description: "Siga o perfil e envie comprovação.",
+      title: "Seguir perfil oficial", description: "Siga o perfil e envie comprovacao.",
       instructions: "1. Abra o perfil oficial.\n2. Siga o perfil.\n3. Envie print ou link.", type: "SHARE" as const,
       proofType: "TEXT_AND_IMAGE" as const, requiredWatchSeconds: null,
     };
@@ -51,23 +51,23 @@ function objectiveTemplate(objective: z.infer<typeof companyCampaignSchema>["obj
 
   if (objective === "REVIEW_BUSINESS") {
     return {
-      title: "Publicar avaliação", description: "Publique avaliação real e comprove.",
-      instructions: "1. Acesse o local indicado.\n2. Faça avaliação legítima.\n3. Envie comprovação.", type: "REVIEW" as const,
+      title: "Publicar avaliacao", description: "Publique avaliacao real e comprove.",
+      instructions: "1. Acesse o local indicado.\n2. Faca avaliacao legitima.\n3. Envie comprovacao.", type: "REVIEW" as const,
       proofType: "LINK" as const, requiredWatchSeconds: null,
     };
   }
 
   if (objective === "CHECKIN_BUSINESS" || objective === "VISIT_LOCAL") {
     return {
-      title: "Fazer check-in", description: "Realize check-in e envie prova da ação.",
-      instructions: "1. Vá ao local.\n2. Faça check-in.\n3. Envie comprovação real.", type: "CHECKIN" as const,
+      title: "Fazer check-in", description: "Realize check-in e envie prova da acao.",
+      instructions: "1. Va ao local.\n2. Faca check-in.\n3. Envie comprovacao real.", type: "CHECKIN" as const,
       proofType: "TEXT_AND_IMAGE" as const, requiredWatchSeconds: null,
     };
   }
 
   return {
-    title: "Executar ação da campanha", description: "Realize a ação e envie comprovação válida.",
-    instructions: "1. Siga as instruções da campanha.\n2. Execute a ação.\n3. Envie prova real.", type: "OTHER" as const,
+    title: "Executar acao da campanha", description: "Realize a acao e envie comprovacao valida.",
+    instructions: "1. Siga as instrucoes da campanha.\n2. Execute a acao.\n3. Envie prova real.", type: "OTHER" as const,
     proofType: "TEXT_AND_IMAGE" as const, requiredWatchSeconds: null,
   };
 }
@@ -78,7 +78,7 @@ export async function companyLoginAction(_prevState: ActionState, formData: Form
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Credenciais inválidas.", fieldErrors: parsed.error.flatten().fieldErrors };
+    return { ok: false, message: "Credenciais invalidas.", fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
   const company = await db.company.findUnique({ where: { email: parsed.data.email } });
@@ -90,7 +90,7 @@ export async function companyLoginAction(_prevState: ActionState, formData: Form
     select: { id: true },
   });
   if (!companyUser) {
-    return { ok: false, message: "Esta conta não possui perfil de empresa válido." };
+    return { ok: false, message: "Esta conta nao possui perfil de empresa valido." };
   }
 
   const validPassword = await compareCompanyPassword(parsed.data.password, company.passwordHash);
@@ -120,17 +120,17 @@ export async function companyRegisterAction(_prevState: ActionState, formData: F
   };
 
   if (data.cnpj.length !== 14) {
-    return { ok: false, message: "CNPJ deve ter 14 números.", fieldErrors: { cnpj: ["CNPJ deve ter 14 números."] } };
+    return { ok: false, message: "CNPJ deve ter 14 numeros.", fieldErrors: { cnpj: ["CNPJ deve ter 14 numeros."] } };
   }
 
   if (data.responsibleWhatsapp.length !== 11) {
     return {
-      ok: false, message: "WhatsApp deve ter DDD + número, total de 11 dígitos.", fieldErrors: { responsibleWhatsapp: ["WhatsApp deve ter DDD + número, total de 11 dígitos."] },
+      ok: false, message: "WhatsApp deve ter DDD + numero, total de 11 digitos.", fieldErrors: { responsibleWhatsapp: ["WhatsApp deve ter DDD + numero, total de 11 digitos."] },
     };
   }
   const emailExists = await db.user.findUnique({ where: { email: data.email }, select: { id: true } });
   if (emailExists) {
-    return { ok: false, message: "Este e-mail já está em uso." };
+    return { ok: false, message: "Este e-mail ja esta em uso." };
   }
 
   const cnpjExists = await db.company.findFirst({
@@ -138,7 +138,7 @@ export async function companyRegisterAction(_prevState: ActionState, formData: F
     select: { id: true },
   });
   if (cnpjExists) {
-    return { ok: false, message: "Este CNPJ já está cadastrado." };
+    return { ok: false, message: "Este CNPJ ja esta cadastrado." };
   }
 
   const publicId = await generateCompanyPublicId();
@@ -151,9 +151,10 @@ export async function companyRegisterAction(_prevState: ActionState, formData: F
         tradeName: data.tradeName, legalName: data.legalName,
         cnpj: data.cnpj, responsibleName: data.responsibleName,
         responsibleWhatsapp: data.responsibleWhatsapp, email: data.email,
-        passwordHash, city: data.city,
+        passwordHash, city: data.city, phone: data.responsibleWhatsapp,
         neighborhood: data.neighborhood, category: data.category,
-        instagramUrl: data.instagramUrl || null, tiktokUrl: data.tiktokUrl || null, facebookUrl: data.facebookUrl || null, googleBusinessUrl: data.googleBusinessUrl || null, websiteUrl: data.websiteUrl || null, status: "PENDING", plan: "FREE", planStatus: "TRIAL",
+        instagramUrl: data.instagramUrl || "", tiktokUrl: data.tiktokUrl || "", facebookUrl: data.facebookUrl || "", googleBusinessUrl: data.googleBusinessUrl || "", websiteUrl: data.websiteUrl || "", status: "PENDING", plan: "FREE", planStatus: "TRIAL",
+        approvedAt: new Date(0), rejectedAt: new Date(0), rejectionReason: "",
         tokensBalance: 50, tokensMonthlyLimit: 50,
         tokensUsedThisCycle: 0, billingCycleStart: new Date(), billingCycleEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
       },
@@ -162,7 +163,7 @@ export async function companyRegisterAction(_prevState: ActionState, formData: F
     await tx.companyTokenLedger.create({
       data: {
         companyId: createdCompany.id, type: "MONTHLY_GRANT",
-        amount: 50, description: "Crédito inicial de trial da empresa",
+        amount: 50, description: "Credito inicial de trial da empresa", referenceId: "",
       },
     });
 
@@ -195,7 +196,7 @@ export async function companyLogoutAction() {
 export async function createCompanyCampaignAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const company = await requireCompany();
 
-  if (company.planStatus === "CANCELED" || company.planStatus === "PAST_DUE") { return { ok: false, message: "Seu plano está indisponível. Regularize o plano para criar campanhas." };
+  if (company.planStatus === "CANCELED" || company.planStatus === "PAST_DUE") { return { ok: false, message: "Seu plano esta indisponivel. Regularize o plano para criar campanhas." };
   }
 
   const parsed = companyCampaignSchema.safeParse({
@@ -211,7 +212,7 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
   const hasTokens = await canSpendCompanyTokens(company.id, estimatedTokens);
   if (!hasTokens) {
     return {
-      ok: false, message: "Você não possui tokens suficientes para enviar esta campanha para análise. Faça upgrade ou adicione tokens.",
+      ok: false, message: "Voce nao possui tokens suficientes para enviar esta campanha para analise. Faca upgrade ou adicione tokens.",
     };
   }
 
@@ -219,7 +220,7 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
   const activeCampaigns = await db.campaign.count({ where: { companyId: company.id, status: "ACTIVE" } });
   if (activeCampaigns >= limits.activeCampaignLimit) {
     return {
-      ok: false, message: `Seu plano atual permite até ${limits.activeCampaignLimit} campanha(s) ativa(s). Faça upgrade para escalar.`,
+      ok: false, message: `Seu plano atual permite ate ${limits.activeCampaignLimit} campanha(s) ativa(s). Faca upgrade para escalar.`,
     };
   }
 
@@ -230,8 +231,8 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
   const operationalBudget = Math.max(data.desiredActions * operationalReward, 1000);
   const fullDescription = [
     data.description,
-    `Quantidade desejada de ações: ${data.desiredActions}.`,
-    data.adminNotes ? `Observações para análise: ${data.adminNotes}` : null,
+    `Quantidade desejada de acoes: ${data.desiredActions}.`,
+    data.adminNotes ? `Observacoes para analise: ${data.adminNotes}` : null,
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -241,7 +242,7 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
       company.id,
       rules.campaignCreation,
       "CAMPAIGN_CREATION",
-      "Criação de campanha",
+      "Criacao de campanha",
       "",
       tx,
     );
@@ -254,7 +255,7 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
       company.id,
       rules.submitForReview,
       "CAMPAIGN_ACTION",
-      "Envio de campanha para análise",
+      "Envio de campanha para analise",
       "",
       tx,
     );
@@ -269,13 +270,13 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
         title: data.title, description: fullDescription,
         city: data.city, neighborhood: data.neighborhood,
         category: data.category, socialPlatform: data.socialPlatform,
-        contentUrl: data.contentUrl || null, objective: data.objective, rewardPerTask: operationalReward, dailyLimitPerUser: operationalDailyLimit,
+        contentUrl: data.contentUrl || "", objective: data.objective, rewardPerTask: operationalReward, dailyLimitPerUser: operationalDailyLimit,
         totalBudget: operationalBudget, status: "PAUSED",
-        reviewStatus: "UNDER_REVIEW", submittedForReviewAt: new Date(), startDate: new Date(data.startDate), endDate: new Date(data.endDate), tasks: {
+        reviewStatus: "UNDER_REVIEW", submittedForReviewAt: new Date(), reviewedAt: new Date(0), startDate: new Date(data.startDate), endDate: new Date(data.endDate), tasks: {
           create: {
             title: template.title, description: template.description,
             instructions: data.userInstructions, reward: operationalReward,
-            type: template.type, externalUrl: data.contentUrl || null, proofType: template.proofType, requiredWatchSeconds: template.requiredWatchSeconds, status: "PAUSED",
+            type: template.type, externalUrl: data.contentUrl || "", proofType: template.proofType, requiredWatchSeconds: template.requiredWatchSeconds ?? 0, status: "PAUSED",
           },
         },
       },
@@ -288,7 +289,7 @@ export async function createCompanyCampaignAction(_prevState: ActionState, formD
   revalidatePath("/admin/empresas");
   revalidatePath("/admin/campanhas");
 
-  return { ok: true, message: `Solicitação enviada para análise: ${createdCampaign.title}.` };
+  return { ok: true, message: `Solicitacao enviada para analise: ${createdCampaign.title}.` };
 }
 
 export async function submitCompanyCampaignForReviewAction(formData: FormData): Promise<ActionState> {
@@ -299,7 +300,7 @@ export async function submitCompanyCampaignForReviewAction(formData: FormData): 
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Campanha inválida para análise." };
+    return { ok: false, message: "Campanha invalida para analise." };
   }
 
   const campaign = await db.campaign.findFirst({
@@ -309,10 +310,10 @@ export async function submitCompanyCampaignForReviewAction(formData: FormData): 
   });
 
   if (!campaign) {
-    return { ok: false, message: "Campanha não encontrada." };
+    return { ok: false, message: "Campanha nao encontrada." };
   }
 
-  if (campaign.reviewStatus === "UNDER_REVIEW" || campaign.reviewStatus === "APPROVED") { return { ok: false, message: "Esta campanha já está em análise ou aprovada." };
+  if (campaign.reviewStatus === "UNDER_REVIEW" || campaign.reviewStatus === "APPROVED") { return { ok: false, message: "Esta campanha ja esta em analise ou aprovada." };
   }
 
   const rules = tokenCostRules();
@@ -328,7 +329,7 @@ export async function submitCompanyCampaignForReviewAction(formData: FormData): 
       company.id,
       rules.submitForReview,
       "CAMPAIGN_ACTION",
-      "Envio de campanha para análise",
+      "Envio de campanha para analise",
       campaign.id,
       tx,
     );
@@ -351,17 +352,17 @@ export async function submitCompanyCampaignForReviewAction(formData: FormData): 
   revalidatePath("/admin/campanhas");
   revalidatePath("/admin/empresas");
 
-  return { ok: true, message: "Campanha enviada para análise." };
+  return { ok: true, message: "Campanha enviada para analise." };
 }
 
 export async function requestCompanyUpgradeAction(): Promise<ActionState> {
   await requireCompany();
-  return { ok: true, message: "Solicitação de upgrade registrada (mock). Nossa equipe entrará em contato." };
+  return { ok: true, message: "Solicitacao de upgrade registrada (mock). Nossa equipe entrara em contato." };
 }
 
 export async function requestCompanyTokensTopUpAction(): Promise<ActionState> {
   await requireCompany();
-  return { ok: true, message: "Solicitação de tokens registrada (mock)." };
+  return { ok: true, message: "Solicitacao de tokens registrada (mock)." };
 }
 
 export async function submitCompanyCampaignForReviewFormAction(formData: FormData): Promise<void> {

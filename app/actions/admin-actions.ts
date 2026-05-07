@@ -297,7 +297,7 @@ export async function createCampaign(_prevState: ActionState, formData: FormData
       neighborhood: data.neighborhood,
       category: data.category, 
       socialPlatform: data.socialPlatform,
-      contentUrl: selectedPostUrl, 
+      contentUrl: selectedPostUrl ?? data.contentUrl ?? "",
       objective: data.objective,
       rewardPerTask: data.rewardPerTask, 
       dailyLimitPerUser: data.dailyLimitPerUser,
@@ -306,6 +306,8 @@ export async function createCampaign(_prevState: ActionState, formData: FormData
       endDate: new Date(data.endDate), 
       status: data.status,
       reviewStatus, 
+      submittedForReviewAt: reviewStatus === "APPROVED" ? new Date() : new Date(0),
+      reviewedAt: reviewStatus === "APPROVED" ? new Date() : new Date(0),
       tasks: {
         create: {
           title: template.title, 
@@ -313,12 +315,12 @@ export async function createCampaign(_prevState: ActionState, formData: FormData
           instructions: template.instructions, 
       reward: data.rewardPerTask,
           type: template.type, 
-      externalUrl: selectedPostUrl,
+      externalUrl: selectedPostUrl ?? data.contentUrl ?? "",
           proofType: template.proofType, 
-      requiredWatchSeconds: template.requiredWatchSeconds,
+      requiredWatchSeconds: template.requiredWatchSeconds ?? undefined,
           status: data.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
         },
-      },
+      } as any,
     },
   });
 
@@ -383,7 +385,7 @@ export async function updateCampaign(_prevState: ActionState, formData: FormData
       neighborhood: data.neighborhood,
       category: data.category, 
       socialPlatform: data.socialPlatform,
-      contentUrl: data.contentUrl || null, objective: data.objective,
+      contentUrl: data.contentUrl || "", objective: data.objective,
       rewardPerTask: data.rewardPerTask, 
       dailyLimitPerUser: data.dailyLimitPerUser,
       totalBudget: data.totalBudget, 
@@ -507,7 +509,7 @@ export async function updateCampaignOperationalConfig(_prevState: ActionState, f
       type: template.type,
           externalUrl: campaign.contentUrl, 
       proofType: template.proofType,
-          requiredWatchSeconds: template.requiredWatchSeconds, 
+          requiredWatchSeconds: template.requiredWatchSeconds ?? 0,
       status: data.status === "ACTIVE" ? "ACTIVE"  : "PAUSED",
         },
       });
@@ -745,7 +747,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
         data: {
           status: "APPROVED", 
       reviewedAt: new Date(), 
-      rejectionReason: null,
+      rejectionReason: "",
         },
       });
 
@@ -1158,6 +1160,7 @@ export async function adjustCompanyTokens(formData: FormData): Promise<ActionSta
       type: "MANUAL_ADJUSTMENT",
         amount,
         description,
+        referenceId: "",
       },
     });
   });
@@ -1249,13 +1252,15 @@ export async function createCompany(formData: FormData): Promise<ActionState> {
       data: {
         publicId,
         tradeName: data.tradeName, 
-      legalName: data.legalName || null, cnpj: normalizedCnpj, 
+      legalName: data.legalName || "", cnpj: normalizedCnpj, 
       responsibleName: data.responsibleName,
         responsibleWhatsapp: normalizedWhatsapp, 
       email: data.email,
-        phone: data.phone || null, city: data.city,
-        neighborhood: data.neighborhood || null, category: data.category || null, instagramUrl: data.instagramUrl || null, facebookUrl: data.facebookUrl || null, tiktokUrl: data.tiktokUrl || null, googleBusinessUrl: data.googleBusinessUrl || null, websiteUrl: data.websiteUrl || null, status: data.status,
-        approvedAt: data.status === "ACTIVE" ? new Date() : null, 
+        phone: data.phone || "", city: data.city,
+        neighborhood: data.neighborhood || "", category: data.category || "", instagramUrl: data.instagramUrl || "", facebookUrl: data.facebookUrl || "", tiktokUrl: data.tiktokUrl || "", googleBusinessUrl: data.googleBusinessUrl || "", websiteUrl: data.websiteUrl || "", status: data.status,
+        approvedAt: data.status === "ACTIVE" ? new Date() : new Date(0), 
+      rejectedAt: new Date(0),
+      rejectionReason: "",
       plan: data.plan,
         planStatus: "ACTIVE", 
       tokensBalance: data.tokensBalance,
@@ -1273,6 +1278,7 @@ export async function createCompany(formData: FormData): Promise<ActionState> {
       type: "MONTHLY_GRANT",
         amount: data.tokensBalance, 
       description: `Crédito inicial da empresa (${data.plan})`,
+        referenceId: "",
       },
     });
 
@@ -1316,9 +1322,9 @@ async function applyCompanyStatus(
   }
 
   const updates =
-    status === "ACTIVE" ? { status, approvedAt : new Date(), rejectedAt: null, rejectionReason: null }
-      : status === "REJECTED" ? { status, approvedAt : null, rejectedAt: new Date(), rejectionReason: rejectionReason ?? "Cadastro reprovado." }
-        : { status, approvedAt: null, rejectedAt: null, rejectionReason: null };
+    status === "ACTIVE" ? { status, approvedAt: new Date(), rejectedAt: new Date(0), rejectionReason: "" }
+      : status === "REJECTED" ? { status, approvedAt: new Date(0), rejectedAt: new Date(), rejectionReason: rejectionReason ?? "Cadastro reprovado." }
+        : { status, approvedAt: new Date(0), rejectedAt: new Date(0), rejectionReason: "" };
 
   await db.$transaction(async (tx) => {
     await tx.company.update({
@@ -1423,10 +1429,10 @@ export async function updateCompany(_prevState: ActionState, formData: FormData)
     where: { id: data.companyId },
     data: {
       tradeName: data.tradeName, 
-      legalName: data.legalName || null, responsibleName: data.responsibleName, 
+      legalName: data.legalName || "", responsibleName: data.responsibleName, 
       responsibleWhatsapp: normalizedWhatsapp,
-      phone: data.phone || null, city: data.city,
-      neighborhood: data.neighborhood || null, category: data.category || null, instagramUrl: data.instagramUrl || null, facebookUrl: data.facebookUrl || null, tiktokUrl: data.tiktokUrl || null, googleBusinessUrl: data.googleBusinessUrl || null, websiteUrl: data.websiteUrl || null,
+      phone: data.phone || "", city: data.city,
+      neighborhood: data.neighborhood || "", category: data.category || "", instagramUrl: data.instagramUrl || "", facebookUrl: data.facebookUrl || "", tiktokUrl: data.tiktokUrl || "", googleBusinessUrl: data.googleBusinessUrl || "", websiteUrl: data.websiteUrl || "",
     },
   });
 
@@ -1475,7 +1481,8 @@ export async function addCompanySocialPost(formData: FormData): Promise<ActionSt
       companyId: parsed.data.companyId, 
       platform: parsed.data.platform,
       url: parsed.data.url, 
-      title: parsed.data.title || null, description: parsed.data.description || null, thumbnailUrl: parsed.data.thumbnailUrl || null, durationSeconds: parsed.data.durationSeconds ?? null, 
+      title: parsed.data.title || "", description: parsed.data.description || "", thumbnailUrl: parsed.data.thumbnailUrl || "", durationSeconds: parsed.data.durationSeconds ?? 0, 
+      publishedAt: new Date(),
       source: parsed.data.source,
     },
   });
@@ -1506,6 +1513,7 @@ export async function importCompanyTestPosts(formData: FormData): Promise<Action
       description: `Conteúdo de teste para ${parsed.data.platform}.`,
       thumbnailUrl: `https://picsum.photos/seed/${parsed.data.platform}-${n}/640/360`,
       durationSeconds: 15 + n * 3, 
+      publishedAt: new Date(),
       source: "PUBLIC_LINK" as const, 
       status: "ACTIVE" as const,
     };

@@ -201,18 +201,25 @@ model User {
   email           String                @unique
   passwordHash    String
   phone           String
-  cpf             String               @unique
-  pixKey          String
+  cpf             String?              @unique
+  pixKey          String?
   pixType         PixType               @default(CPF)
-  bankName        String
+  bankName        String?
   onboardingCompleted Boolean           @default(false)
   identityVerificationStatus IdentityVerificationStatus @default(NOT_VERIFIED)
+  energy          Int                   @default(1000)
+  maxEnergy       Int                   @default(1000)
+  lastEnergyRefill DateTime             @default(now())
+  xp              Int                   @default(0)
+  level           Int                   @default(1)
+  trustScore      Int                   @default(500)
+  isVerifiedProfile Boolean             @default(false)
   status          UserStatus            @default(ACTIVE)
   role            UserRole              @default(USER)
-  companyId       String
+  companyId       String?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
-  company         Company              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  company         Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
   taskSubmissions TaskSubmission[]
   walletTxs       WalletTransaction[]
   withdrawals     WithdrawalRequest[]
@@ -226,6 +233,10 @@ model User {
   taskSessions    TaskSession[]
   devices         UserDevice[]
   withdrawalRiskChecks WithdrawalRiskCheck[]
+
+  @@index([level, xp])
+  @@index([trustScore, status])
+  @@index([isVerifiedProfile, status])
 }
 
 model Campaign {
