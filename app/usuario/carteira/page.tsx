@@ -1,6 +1,5 @@
 import { TransactionList } from "@/components/carteira/TransactionList";
-import { EnergyBar, StatsCard, WalletCard, XPBar } from "@/components/gamification";
-import { UserShell } from "@/components/layout/UserShell";
+import { EnergyBar, GamificationShell, StatsCard, WalletCard, XPBar } from "@/components/gamification";
 import { requireUser } from "@/lib/auth";
 import { getWalletAvailableBalance } from "@/lib/campaign-rules";
 import { db } from "@/lib/db";
@@ -20,11 +19,11 @@ export default async function CarteiraPage() {
   const totalWithdrawn = transactions.filter((tx) => tx.type === "WITHDRAWAL_HOLD" || tx.type === "WITHDRAWAL_PAID").reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
-    <UserShell title="Carteira Gamer" subtitle="Saldo, progresso e movimentacoes.">
-      <section className="grid gap-4 md:grid-cols-3">
+    <GamificationShell title="Carteira Gamer" subtitle="Saldo, progresso e movimentacoes.">
+      <section className="grid gap-3 md:grid-cols-3">
         <WalletCard balance={formatMoney(available)} />
-        <div className="rounded-2xl border border-[#ead6ff] bg-white/80 p-4"><XPBar xp={user.xp} nextXp={15500} /></div>
-        <div className="rounded-2xl border border-[#ead6ff] bg-white/80 p-4"><EnergyBar energy={user.energy} maxEnergy={user.maxEnergy} /></div>
+        <div className="rounded-2xl border border-[#6f45a3] bg-[#1a1030]/85 p-4 backdrop-blur-md"><XPBar xp={user.xp} nextXp={15500} /></div>
+        <div className="rounded-2xl border border-[#6f45a3] bg-[#1a1030]/85 p-4 backdrop-blur-md"><EnergyBar energy={user.energy} maxEnergy={user.maxEnergy} /></div>
       </section>
       <section className="grid gap-3 md:grid-cols-3">
         <StatsCard label="Total ganho" value={formatMoney(totalEarned)} />
@@ -32,6 +31,6 @@ export default async function CarteiraPage() {
         <StatsCard label="Saques" value={formatMoney(totalWithdrawn)} />
       </section>
       <TransactionList transactions={transactions} />
-    </UserShell>
+    </GamificationShell>
   );
 }

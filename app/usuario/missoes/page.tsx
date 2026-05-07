@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { MissionCard } from "@/components/gamification";
-import { UserShell } from "@/components/layout/UserShell";
+import { GamificationShell, MissionCard } from "@/components/gamification";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 
@@ -22,12 +21,12 @@ export default async function MissoesPage({ searchParams }: PageProps) {
   const campaigns = await db.campaign.findMany({ where, orderBy: { createdAt: "desc" } });
 
   return (
-    <UserShell title="Missoes" subtitle="Escolha e complete para subir de nivel.">
+    <GamificationShell title="Missoes" subtitle="Escolha e complete para subir de nivel.">
       <section className="grid gap-3 md:grid-cols-2">
         {campaigns.map((c) => (
-          <MissionCard key={c.id} title={c.title} reward={formatMoney(c.rewardPerTask)} href={`/usuario/campanhas/${c.id}`} />
+          <MissionCard key={c.id} title={c.title} reward={formatMoney(c.rewardPerTask)} href={`/usuario/campanhas/${c.id}`} rarity="EPIC" />
         ))}
       </section>
-    </UserShell>
+    </GamificationShell>
   );
 }

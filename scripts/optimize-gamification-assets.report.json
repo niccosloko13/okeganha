@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-05-07T07:40:07.866Z",
+  "quality": 86,
+  "convertedCount": 15,
+  "beforeBytes": 23644865,
+  "afterBytes": 3271030,
+  "savedBytes": 20373835,
+  "savedPercent": 86.17,
+  "converted": [
+    {
+      "from": "public\\gamification\\effects\\particles_glow.png",
+      "to": "public\\gamification\\effects\\particles_glow.webp",
+      "before": 1772658,
+      "after": 212114
+    },
+    {
+      "from": "public\\gamification\\effects\\streak-fire.png",
+      "to": "public\\gamification\\effects\\streak-fire.webp",
+      "before": 1099619,
+      "after": 153550
+    },
+    {
+      "from": "public\\gamification\\rewards\\bau.png",
+      "to": "public\\gamification\\rewards\\bau.webp",
+      "before": 1723390,
+      "after": 283010
+    },
+    {
+      "from": "public\\gamification\\rewards\\caixa.png",
+      "to": "public\\gamification\\rewards\\caixa.webp",
+      "before": 1664676,
+      "after": 257854
+    },
+    {
+      "from": "public\\gamification\\rewards\\energia.png",
+      "to": "public\\gamification\\rewards\\energia.webp",
+      "before": 1575841,
+      "after": 154490
+    },
+    {
+      "from": "public\\gamification\\rewards\\locked-reward.png",
+      "to": "public\\gamification\\rewards\\locked-reward.webp",
+      "before": 1510271,
+      "after": 218196
+    },
+    {
+      "from": "public\\gamification\\rewards\\moeda.png",
+      "to": "public\\gamification\\rewards\\moeda.webp",
+      "before": 1773825,
+      "after": 243634
+    },
+    {
+      "from": "public\\gamification\\rewards\\xp.png",
+      "to": "public\\gamification\\rewards\\xp.webp",
+      "before": 1711645,
+      "after": 268370
+    },
+    {
+      "from": "public\\gamification\\cards\\botaoprincipal.png",
+      "to": "public\\gamification\\cards\\botaoprincipal.webp",
+      "before": 1196307,
+      "after": 151144
+    },
+    {
+      "from": "public\\gamification\\cards\\CARDGLASSBASE.png",
+      "to": "public\\gamification\\cards\\CARDGLASSBASE.webp",
+      "before": 1669390,
+      "after": 211760
+    },
+    {
+      "from": "public\\gamification\\badges\\crown-vip.png",
+      "to": "public\\gamification\\badges\\crown-vip.webp",
+      "before": 1508572,
+      "after": 188780
+    },
+    {
+      "from": "public\\gamification\\badges\\nivel.png",
+      "to": "public\\gamification\\badges\\nivel.webp",
+      "before": 1782870,
+      "after": 241950
+    },
+    {
+      "from": "public\\gamification\\badges\\ranking-badge.png",
+      "to": "public\\gamification\\badges\\ranking-badge.webp",
+      "before": 1396164,
+      "after": 205652
+    },
+    {
+      "from": "public\\gamification\\badges\\trofeu.png",
+      "to": "public\\gamification\\badges\\trofeu.webp",
+      "before": 1520913,
+      "after": 254952
+    },
+    {
+      "from": "public\\gamification\\badges\\verificado.png",
+      "to": "public\\gamification\\badges\\verificado.webp",
+      "before": 1738724,
+      "after": 225574
+    }
+  ]
+}

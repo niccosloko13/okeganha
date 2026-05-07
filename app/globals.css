@@ -32,6 +32,11 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   font-feature-settings: "ss01" on, "cv01" on;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  overscroll-behavior-x: none;
 }
 
 .ok-card {

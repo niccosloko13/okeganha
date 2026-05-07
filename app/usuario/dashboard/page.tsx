@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import { AppShell } from "@/components/layout/AppShell";
-import { DailyRewardCard, EnergyBar, LevelBadge, ProfileCard, RankingCard, RewardChest, StatsCard, WalletCard, XPBar } from "@/components/gamification";
+import { DailyRewardCard, EnergyBar, GamificationShell, LevelBadge, ProfileCard, RankingCard, RewardChest, StatsCard, WalletCard, XPBar } from "@/components/gamification";
 import { requireRegularUser } from "@/lib/auth";
 import { getWalletAvailableBalance } from "@/lib/campaign-rules";
 import { db } from "@/lib/db";
@@ -17,13 +16,13 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <AppShell title="Game Hub" subtitle="Sua jornada gamificada no OKEGANHA.">
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-2 rounded-3xl border border-[#d9b6ff] bg-white/70 p-5 backdrop-blur-xl">
+    <GamificationShell title="Game Hub" subtitle="Sua jornada gamificada no OKEGANHA.">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="md:col-span-2 rounded-3xl border border-[#6f45a3] bg-[#1a1030]/85 p-4 backdrop-blur-md md:p-5">
           <div className="mb-3 flex items-center justify-between"><ProfileCard name={user.name} /><LevelBadge level={user.level} /></div>
           <XPBar xp={user.xp} nextXp={15500} />
           <div className="mt-4"><EnergyBar energy={user.energy} maxEnergy={user.maxEnergy} /></div>
-          <div className="mt-4 flex gap-2"><Link href="/usuario/missoes" className="rounded-xl bg-gradient-to-r from-[#ff4fb0] to-[#7a2fbc] px-4 py-2 text-sm font-semibold text-white">Ir para missoes</Link><Link href="/usuario/carteira" className="rounded-xl border border-[#d9b6ff] bg-white px-4 py-2 text-sm font-semibold text-[#643394]">Carteira</Link></div>
+          <div className="mt-4 grid grid-cols-2 gap-2"><Link href="/usuario/missoes" className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#ff4fb0] to-[#7a2fbc] px-4 py-3 text-center text-sm font-semibold text-white active:scale-95">Ir para missoes</Link><Link href="/usuario/carteira" className="min-h-[44px] rounded-xl border border-[#6f45a3] bg-[#201339] px-4 py-3 text-center text-sm font-semibold text-[#e4d1ff] active:scale-95">Carteira</Link></div>
         </div>
         <WalletCard balance={formatMoney(balance)} />
       </section>
@@ -39,6 +38,6 @@ export default async function DashboardPage() {
         <RewardChest />
         <RankingCard />
       </section>
-    </AppShell>
+    </GamificationShell>
   );
 }
