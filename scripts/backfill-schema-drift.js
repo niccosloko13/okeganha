@@ -18,6 +18,8 @@ const checks = [
   ["Task", "requiredWatchSeconds", 'SELECT COUNT(*)::int AS c FROM "Task" WHERE "requiredWatchSeconds" IS NULL'],
   ["TaskSubmission", "rejectionReason", 'SELECT COUNT(*)::int AS c FROM "TaskSubmission" WHERE "rejectionReason" IS NULL'],
   ["TaskSubmission", "reviewedAt", 'SELECT COUNT(*)::int AS c FROM "TaskSubmission" WHERE "reviewedAt" IS NULL'],
+  ["User", "passwordHash", 'SELECT COUNT(*)::int AS c FROM "User" WHERE "passwordHash" IS NULL'],
+  ["User", "phone", 'SELECT COUNT(*)::int AS c FROM "User" WHERE "phone" IS NULL'],
   ["WithdrawalRequest", "reviewedAt", 'SELECT COUNT(*)::int AS c FROM "WithdrawalRequest" WHERE "reviewedAt" IS NULL'],
   ["WithdrawalRequest", "paidAt", 'SELECT COUNT(*)::int AS c FROM "WithdrawalRequest" WHERE "paidAt" IS NULL'],
   ["WithdrawalRequest", "rejectionReason", 'SELECT COUNT(*)::int AS c FROM "WithdrawalRequest" WHERE "rejectionReason" IS NULL'],
@@ -50,37 +52,131 @@ function printCounts(title, rows) {
 
 async function applyBackfill() {
   await prisma.$transaction(async (tx) => {
-    await tx.adminAuditLog.updateMany({ where: { metadata: null }, data: { metadata: Prisma.JsonNull } });
+    const fallbackCampaign = await tx.campaign.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } });
+    const fallbackTask = await tx.task.findFirst({ orderBy: { createdAt: "desc" }, select: { id: true } });
+    if (!fallbackCampaign || !fallbackTask) {
+      throw new Error("Backfill requires at least one Campaign and one Task to repair UserActivityLog FKs.");
+    }
 
-    await tx.campaign.updateMany({ where: { submittedForReviewAt: null }, data: { submittedForReviewAt: EPOCH } });
-    await tx.campaign.updateMany({ where: { reviewedAt: null }, data: { reviewedAt: EPOCH } });
+    const usersWithNullSession = await tx.$queryRawUnsafe(
+      'SELECT DISTINCT "userId" FROM "UserActivityLog" WHERE "sessionId" IS NULL'
+    );
+    for (const row of usersWithNullSession) {
+      const existing = await tx.taskSession.findFirst({
+        where: { userId: row.userId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
+      if (!existing) {
+        await tx.taskSession.create({
+          data: {
+            userId: row.userId,
+            taskId: fallbackTask.id,
+            campaignId: fallbackCampaign.id,
+            requiredDuration: 0,
+            activeDuration: 0,
+            lastHeartbeat: EPOCH,
+            focusLossCount: 0,
+            isCompleted: true,
+            startedAt: EPOCH,
+          },
+        });
+      }
+    }
 
-    await tx.company.updateMany({ where: { phone: null }, data: { phone: "" } });
-    await tx.company.updateMany({ where: { googleBusinessUrl: null }, data: { googleBusinessUrl: "" } });
-    await tx.company.updateMany({ where: { websiteUrl: null }, data: { websiteUrl: "" } });
-    await tx.company.updateMany({ where: { rejectedAt: null }, data: { rejectedAt: EPOCH } });
-    await tx.company.updateMany({ where: { rejectionReason: null }, data: { rejectionReason: "" } });
+    const usersWithNullDevice = await tx.$queryRawUnsafe(
+      'SELECT DISTINCT "userId" FROM "UserActivityLog" WHERE "deviceId" IS NULL'
+    );
+    for (const row of usersWithNullDevice) {
+      const existing = await tx.userDevice.findFirst({
+        where: { userId: row.userId },
+        orderBy: { lastSeen: "desc" },
+        select: { id: true },
+      });
+      if (!existing) {
+        await tx.userDevice.create({
+          data: {
+            userId: row.userId,
+            fingerprintHash: `backfill-${row.userId}`,
+            userAgent: "backfill",
+            ipAddress: "0.0.0.0",
+          },
+        });
+      }
+    }
 
-    await tx.companyTokenLedger.updateMany({ where: { referenceId: null }, data: { referenceId: "" } });
+    await tx.$executeRawUnsafe('UPDATE "AdminAuditLog" SET "metadata" = $1::jsonb WHERE "metadata" IS NULL', "{}");
+    await tx.$executeRawUnsafe('UPDATE "Campaign" SET "submittedForReviewAt" = $1 WHERE "submittedForReviewAt" IS NULL', EPOCH);
+    await tx.$executeRawUnsafe('UPDATE "Campaign" SET "reviewedAt" = $1 WHERE "reviewedAt" IS NULL', EPOCH);
 
-    await tx.task.updateMany({ where: { requiredWatchSeconds: null }, data: { requiredWatchSeconds: 0 } });
+    await tx.$executeRawUnsafe('UPDATE "Company" SET "phone" = $1 WHERE "phone" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "Company" SET "googleBusinessUrl" = $1 WHERE "googleBusinessUrl" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "Company" SET "websiteUrl" = $1 WHERE "websiteUrl" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "Company" SET "rejectedAt" = $1 WHERE "rejectedAt" IS NULL', EPOCH);
+    await tx.$executeRawUnsafe('UPDATE "Company" SET "rejectionReason" = $1 WHERE "rejectionReason" IS NULL', "");
 
-    await tx.taskSubmission.updateMany({ where: { rejectionReason: null }, data: { rejectionReason: "" } });
-    await tx.taskSubmission.updateMany({ where: { reviewedAt: null }, data: { reviewedAt: EPOCH } });
+    await tx.$executeRawUnsafe('UPDATE "CompanyTokenLedger" SET "referenceId" = $1 WHERE "referenceId" IS NULL', "");
 
-    await tx.withdrawalRequest.updateMany({ where: { reviewedAt: null }, data: { reviewedAt: EPOCH } });
-    await tx.withdrawalRequest.updateMany({ where: { paidAt: null }, data: { paidAt: EPOCH } });
-    await tx.withdrawalRequest.updateMany({ where: { rejectionReason: null }, data: { rejectionReason: "" } });
+    await tx.$executeRawUnsafe('UPDATE "Task" SET "requiredWatchSeconds" = 0 WHERE "requiredWatchSeconds" IS NULL');
 
-    await tx.userActivityLog.updateMany({ where: { sessionId: null }, data: { sessionId: "" } });
-    await tx.userActivityLog.updateMany({ where: { deviceId: null }, data: { deviceId: "" } });
-    await tx.userActivityLog.updateMany({ where: { campaignId: null }, data: { campaignId: "" } });
-    await tx.userActivityLog.updateMany({ where: { taskId: null }, data: { taskId: "" } });
-    await tx.userActivityLog.updateMany({ where: { interactionType: null }, data: { interactionType: "" } });
-    await tx.userActivityLog.updateMany({ where: { durationSeconds: null }, data: { durationSeconds: 0 } });
-    await tx.userActivityLog.updateMany({ where: { focusLossCount: null }, data: { focusLossCount: 0 } });
-    await tx.userActivityLog.updateMany({ where: { ipAddress: null }, data: { ipAddress: "" } });
-    await tx.userActivityLog.updateMany({ where: { userAgent: null }, data: { userAgent: "" } });
+    await tx.$executeRawUnsafe('UPDATE "TaskSubmission" SET "rejectionReason" = $1 WHERE "rejectionReason" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "TaskSubmission" SET "reviewedAt" = $1 WHERE "reviewedAt" IS NULL', EPOCH);
+    await tx.$executeRawUnsafe('UPDATE "User" SET "passwordHash" = $1 WHERE "passwordHash" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "User" SET "phone" = $1 WHERE "phone" IS NULL', "");
+
+    await tx.$executeRawUnsafe('UPDATE "WithdrawalRequest" SET "reviewedAt" = $1 WHERE "reviewedAt" IS NULL', EPOCH);
+    await tx.$executeRawUnsafe('UPDATE "WithdrawalRequest" SET "paidAt" = $1 WHERE "paidAt" IS NULL', EPOCH);
+    await tx.$executeRawUnsafe('UPDATE "WithdrawalRequest" SET "rejectionReason" = $1 WHERE "rejectionReason" IS NULL', "");
+
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog" ual
+      SET "sessionId" = ts.id
+      FROM "TaskSession" ts
+      WHERE ual."sessionId" IS NULL AND ts."userId" = ual."userId"
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog"
+      SET "sessionId" = (SELECT id FROM "TaskSession" ORDER BY "createdAt" DESC LIMIT 1)
+      WHERE "sessionId" IS NULL
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog" ual
+      SET "deviceId" = ud.id
+      FROM "UserDevice" ud
+      WHERE ual."deviceId" IS NULL AND ud."userId" = ual."userId"
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog"
+      SET "deviceId" = (SELECT id FROM "UserDevice" ORDER BY "lastSeen" DESC LIMIT 1)
+      WHERE "deviceId" IS NULL
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog" ual
+      SET "campaignId" = ts."campaignId"
+      FROM "TaskSession" ts
+      WHERE ual."campaignId" IS NULL AND ts.id = ual."sessionId"
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog"
+      SET "campaignId" = (SELECT id FROM "Campaign" ORDER BY "createdAt" DESC LIMIT 1)
+      WHERE "campaignId" IS NULL
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog" ual
+      SET "taskId" = ts."taskId"
+      FROM "TaskSession" ts
+      WHERE ual."taskId" IS NULL AND ts.id = ual."sessionId"
+    `);
+    await tx.$executeRawUnsafe(`
+      UPDATE "UserActivityLog"
+      SET "taskId" = (SELECT id FROM "Task" ORDER BY "createdAt" DESC LIMIT 1)
+      WHERE "taskId" IS NULL
+    `);
+    await tx.$executeRawUnsafe('UPDATE "UserActivityLog" SET "interactionType" = $1 WHERE "interactionType" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "UserActivityLog" SET "durationSeconds" = 0 WHERE "durationSeconds" IS NULL');
+    await tx.$executeRawUnsafe('UPDATE "UserActivityLog" SET "focusLossCount" = 0 WHERE "focusLossCount" IS NULL');
+    await tx.$executeRawUnsafe('UPDATE "UserActivityLog" SET "ipAddress" = $1 WHERE "ipAddress" IS NULL', "");
+    await tx.$executeRawUnsafe('UPDATE "UserActivityLog" SET "userAgent" = $1 WHERE "userAgent" IS NULL', "");
   });
 }
 

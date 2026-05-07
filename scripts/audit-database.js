@@ -11,7 +11,7 @@ async function main() {
     companyUsersWithoutCompany,
     wrongUserCompanyLinks,
     wrongAdminCompanyLinks,
-    campaignsWithoutCompany,
+    campaignsWithoutCompanyRows,
     campaignsByStatus,
     activeCampaignsWithoutApprovedReview,
     submissionsByStatus,
@@ -32,7 +32,11 @@ async function main() {
     prisma.user.count({ where: { role: "COMPANY", companyId: null } }),
     prisma.user.count({ where: { role: "USER", NOT: { companyId: null } } }),
     prisma.user.count({ where: { role: "ADMIN", NOT: { companyId: null } } }),
-    prisma.campaign.count({ where: { companyId: null } }),
+    prisma.$queryRaw`
+      SELECT COUNT(*)::int AS count
+      FROM "Campaign"
+      WHERE "companyId" IS NULL
+    `,
     prisma.campaign.groupBy({ by: ["status"], _count: { _all: true } }),
     prisma.campaign.count({
       where: {
@@ -44,7 +48,7 @@ async function main() {
     prisma.withdrawalRequest.groupBy({ by: ["status"], _count: { _all: true } }),
     prisma.walletTransaction.groupBy({
       by: ["type", "referenceId"], where: {
-        type: "CREDIT", referenceId: { not: null },
+        type: "CREDIT", referenceId: { not: "" },
       },
       _count: { _all: true },
     }),
@@ -115,6 +119,10 @@ async function main() {
   console.log(`Users COMPANY sem companyId: ${companyUsersWithoutCompany}`);
   console.log(`Users USER com companyId indevido: ${wrongUserCompanyLinks}`);
   console.log(`Admins com companyId indevido: ${wrongAdminCompanyLinks}`);
+  const campaignsWithoutCompany =
+    Array.isArray(campaignsWithoutCompanyRows) && campaignsWithoutCompanyRows[0]
+      ? Number(campaignsWithoutCompanyRows[0].count ?? 0)
+      : 0;
   console.log(`Campanhas sem empresa: ${campaignsWithoutCompany}`);
   console.log(`Campanhas ACTIVE sem reviewStatus APPROVED: ${activeCampaignsWithoutApprovedReview}`);
   console.log(`ADMIN/COMPANY com dados de saque preenchidos: ${nonUserWithPayoutData}`);
