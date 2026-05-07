@@ -12,6 +12,7 @@ import { getPlanLimits, spendCompanyTokens, tokenCostRules } from "@/lib/company
 import { estimateCampaignTokens } from "@/lib/campaign-token-estimator";
 import { createAdminAuditLog } from "@/lib/admin-audit";
 import { db } from "@/lib/db";
+import { applyMissionApprovalReward, getXpRewardForMission } from "@/lib/gamification";
 import type { ActionState } from "@/types";
 
 const campaignSchema = z.object({
@@ -89,7 +90,7 @@ const rejectCampaignReviewSchema = z.object({
 const adjustCompanyTokensSchema = z.object({
   companyId: z.string().min(1), 
       amount: z.coerce.number().int().min(-100000).max(100000).refine((value) => value !== 0, "Informe um valor diferente de zero."), 
-      description: z.string().trim().min(4, "Descrição obrigatória."),
+      description: z.string().trim().min(4, "DescriA§A£o obrigatA³ria."),
 });
 
 const updateCompanyPlanSchema = z.object({
@@ -130,7 +131,7 @@ const companyStatusSchema = z.object({
 });
 
 const companyActionSchema = z.object({
-  companyId: z.string().min(1, "Empresa inválida."),
+  companyId: z.string().min(1, "Empresa invA¡lida."),
 });
 
 const rejectCompanySchema = companyActionSchema.extend({
@@ -179,9 +180,9 @@ function objectiveToTaskTemplate(objective: z.infer<typeof campaignSchema>["obje
     case "WATCH_VIDEO":
     case "VIEW_STORY":
       return {
-        title: "Assistir conteúdo oficial", 
-      description: "Assista ao conteúdo da campanha e envie prova da visualização.",
-        instructions: "1. Abra o conteúdo oficial.\n2. Assista o vídeo até o final.\n3. Envie uma comprovação real.", 
+        title: "Assistir conteAºdo oficial", 
+      description: "Assista ao conteAºdo da campanha e envie prova da visualizaA§A£o.",
+        instructions: "1. Abra o conteAºdo oficial.\n2. Assista o vA­deo atA© o final.\n3. Envie uma comprovaA§A£o real.", 
       type: "CONTENT" as const,
         proofType: "LINK" as const, 
       requiredWatchSeconds: 30,
@@ -189,8 +190,8 @@ function objectiveToTaskTemplate(objective: z.infer<typeof campaignSchema>["obje
     case "FOLLOW_PROFILE":
       return {
         title: "Seguir perfil da campanha", 
-      description: "Siga o perfil indicado e comprove a ação.",
-        instructions: "1. Abra o perfil oficial.\n2. Siga o perfil.\n3. Envie print ou link da comprovação.", 
+      description: "Siga o perfil indicado e comprove a aA§A£o.",
+        instructions: "1. Abra o perfil oficial.\n2. Siga o perfil.\n3. Envie print ou link da comprovaA§A£o.", 
       type: "SHARE" as const,
         proofType: "TEXT_AND_IMAGE" as const, 
       requiredWatchSeconds: null,
@@ -198,8 +199,8 @@ function objectiveToTaskTemplate(objective: z.infer<typeof campaignSchema>["obje
     case "REVIEW_BUSINESS":
       return {
         title: "Avaliar estabelecimento", 
-      description: "Envie avaliação legítima e comprove o envio.",
-        instructions: "1. Acesse o local indicado.\n2. Faça avaliação real.\n3. Envie link ou print da prova.", 
+      description: "Envie avaliaA§A£o legA­tima e comprove o envio.",
+        instructions: "1. Acesse o local indicado.\n2. FaA§a avaliaA§A£o real.\n3. Envie link ou print da prova.", 
       type: "REVIEW" as const,
         proofType: "LINK" as const, 
       requiredWatchSeconds: null,
@@ -208,8 +209,8 @@ function objectiveToTaskTemplate(objective: z.infer<typeof campaignSchema>["obje
     case "VISIT_LOCAL":
       return {
         title: "Realizar check-in", 
-      description: "Faça check-in no local da campanha e envie comprovação.",
-        instructions: "1. Vá ao local indicado.\n2. Realize o check-in.\n3. Envie prova clara da execução.", 
+      description: "FaA§a check-in no local da campanha e envie comprovaA§A£o.",
+        instructions: "1. VA¡ ao local indicado.\n2. Realize o check-in.\n3. Envie prova clara da execuA§A£o.", 
       type: "CHECKIN" as const,
         proofType: "TEXT_AND_IMAGE" as const, 
       requiredWatchSeconds: null,
@@ -219,9 +220,9 @@ function objectiveToTaskTemplate(objective: z.infer<typeof campaignSchema>["obje
     case "OTHER":
     default:
       return {
-        title: "Executar ação da campanha", 
-      description: "Conclua a ação solicitada e envie comprovação real.",
-        instructions: "1. Abra o conteúdo ou local da campanha.\n2. Execute a ação solicitada.\n3. Envie comprovação válida.", 
+        title: "Executar aA§A£o da campanha", 
+      description: "Conclua a aA§A£o solicitada e envie comprovaA§A£o real.",
+        instructions: "1. Abra o conteAºdo ou local da campanha.\n2. Execute a aA§A£o solicitada.\n3. Envie comprovaA§A£o vA¡lida.", 
       type: "OTHER" as const,
         proofType: "TEXT_AND_IMAGE" as const, 
       requiredWatchSeconds: null,
@@ -362,7 +363,7 @@ export async function updateCampaign(_prevState: ActionState, formData: FormData
   const data = parsed.data;
   const company = await db.company.findUnique({ where: { id: data.companyId } });
   if (!company) {
-    return { ok: false, message: "Empresa não encontrada." };
+    return { ok: false, message: "Empresa nA£o encontrada." };
   }
 
   if (data.status === "ACTIVE") {
@@ -370,7 +371,7 @@ export async function updateCampaign(_prevState: ActionState, formData: FormData
       where: { id: data.id },
       select: { reviewStatus: true },
     });
-    if (!existing || existing.reviewStatus !== "APPROVED") { return { ok: false, message: "Campanha não pode ser ativada sem aprovação." };
+    if (!existing || existing.reviewStatus !== "APPROVED") { return { ok: false, message: "Campanha nA£o pode ser ativada sem aprovaA§A£o." };
     }
   }
 
@@ -411,7 +412,7 @@ function buildCampaignMetaText(input: {
   const lines = [
     input.baseDescription.trim(),
     "",
-    `Meta de ações aprovadas: ${input.maxApprovedActions}`,
+    `Meta de aA§Aµes aprovadas: ${input.maxApprovedActions}`,
     `Prioridade: ${input.priority}`,
   ];
   if (input.internalNotes && input.internalNotes.trim().length > 0) {
@@ -421,7 +422,7 @@ function buildCampaignMetaText(input: {
 }
 
 function parseCampaignMeta(description: string) {
-  const maxApprovedActions = description.match(/Meta de ações aprovadas:\s*(\d+)/i)?.[1];
+  const maxApprovedActions = description.match(/Meta de aA§Aµes aprovadas:\s*(\d+)/i)?.[1];
   const priority = description.match(/Prioridade:\s*(LOW|MEDIUM|HIGH)/i)?.[1] as "LOW" | "MEDIUM" | "HIGH" | undefined;
   const internalNotes = description.match(/Notas internas:\s*(.*)/i)?.[1];
   return {
@@ -449,7 +450,7 @@ export async function updateCampaignOperationalConfig(_prevState: ActionState, f
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Dados operacionais inválidos.", fieldErrors: parsed.error.flatten().fieldErrors };
+    return { ok: false, message: "Dados operacionais invA¡lidos.", fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
   const data = parsed.data;
@@ -459,11 +460,11 @@ export async function updateCampaignOperationalConfig(_prevState: ActionState, f
   });
 
   if (!campaign) {
-    return { ok: false, message: "Campanha não encontrada." };
+    return { ok: false, message: "Campanha nA£o encontrada." };
   }
 
   if (data.status === "ACTIVE" && campaign.reviewStatus !== "APPROVED") {
-    return { ok: false, message: "Campanha não pode ser ativada sem aprovação." };
+    return { ok: false, message: "Campanha nA£o pode ser ativada sem aprovaA§A£o." };
   }
 
   const mergedDescription = buildCampaignMetaText({
@@ -521,7 +522,7 @@ export async function updateCampaignOperationalConfig(_prevState: ActionState, f
       targetType: "CAMPAIGN",
     targetId: campaign.id, 
       action: "CAMPAIGN_OPERATIONAL_CONFIG_UPDATED",
-    description: `Configuração operacional atualizada para campanha ${campaign.title}.`,
+    description: `ConfiguraA§A£o operacional atualizada para campanha ${campaign.title}.`,
     metadata: {
       rewardPerTask: data.rewardPerTask, 
       dailyLimitPerUser: data.dailyLimitPerUser,
@@ -535,14 +536,14 @@ export async function updateCampaignOperationalConfig(_prevState: ActionState, f
   revalidatePath(`/admin/campanhas/${campaign.id}`);
   revalidatePath("/usuario/campanhas");
   revalidatePath("/empresa/campanhas");
-  return { ok: true, message: "Configuração operacional salva com sucesso." };
+  return { ok: true, message: "ConfiguraA§A£o operacional salva com sucesso." };
 }
 
 export async function approveCampaignReview(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireAdmin();
   const parsed = campaignReviewActionSchema.safeParse({ campaignId: formData.get("campaignId") });
   if (!parsed.success) {
-    return { ok: false, message: "Campanha inválida para aprovação." };
+    return { ok: false, message: "Campanha invA¡lida para aprovaA§A£o." };
   }
 
   const campaign = await db.campaign.findUnique({
@@ -550,7 +551,7 @@ export async function approveCampaignReview(_prevState: ActionState, formData: F
     include: { tasks: { take: 1, orderBy: { createdAt: "asc" } } },
   });
   if (!campaign) {
-    return { ok: false, message: "Campanha não encontrada." };
+    return { ok: false, message: "Campanha nA£o encontrada." };
   }
 
   const socialRequiresUrl = campaign.socialPlatform !== "LOCAL" && campaign.socialPlatform !== "OTHER";
@@ -565,7 +566,7 @@ export async function approveCampaignReview(_prevState: ActionState, formData: F
   ) {
     return {
       ok: false, 
-      message: "Aprovação bloqueada: preencha recompensa, limite, orçamento, data, URL social e tarefa vinculada.",
+      message: "AprovaA§A£o bloqueada: preencha recompensa, limite, orA§amento, data, URL social e tarefa vinculada.",
     };
   }
 
@@ -595,7 +596,7 @@ export async function approveCampaignReview(_prevState: ActionState, formData: F
       targetType: "CAMPAIGN",
     targetId: campaign.id, 
       action: "CAMPAIGN_REVIEW_APPROVED",
-    description: `Campanha ${campaign.title} aprovada na revisão.`,
+    description: `Campanha ${campaign.title} aprovada na revisA£o.`,
   });
 
   revalidatePath("/admin/campanhas");
@@ -613,12 +614,12 @@ export async function rejectCampaignReview(_prevState: ActionState, formData: Fo
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Informe um motivo válido para reprovar a campanha." };
+    return { ok: false, message: "Informe um motivo vA¡lido para reprovar a campanha." };
   }
 
   const campaign = await db.campaign.findUnique({ where: { id: parsed.data.campaignId } });
   if (!campaign) {
-    return { ok: false, message: "Campanha não encontrada." };
+    return { ok: false, message: "Campanha nA£o encontrada." };
   }
 
   await db.campaign.update({
@@ -627,7 +628,7 @@ export async function rejectCampaignReview(_prevState: ActionState, formData: Fo
       reviewStatus: "REJECTED", 
       status: "PAUSED",
       reviewedAt: new Date(), 
-      description: `${campaign.description}\n\nMotivo da reprovação: ${parsed.data.rejectionReason}`,
+      description: `${campaign.description}\n\nMotivo da reprovaA§A£o: ${parsed.data.rejectionReason}`,
     },
   });
 
@@ -636,7 +637,7 @@ export async function rejectCampaignReview(_prevState: ActionState, formData: Fo
       targetType: "CAMPAIGN",
     targetId: campaign.id, 
       action: "CAMPAIGN_REVIEW_REJECTED",
-    description: `Campanha ${campaign.title} reprovada na revisão.`,
+    description: `Campanha ${campaign.title} reprovada na revisA£o.`,
     metadata: { rejectionReason: parsed.data.rejectionReason },
   });
 
@@ -648,7 +649,7 @@ export async function rejectCampaignReview(_prevState: ActionState, formData: Fo
 
 export async function pauseCampaign(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = campaignReviewActionSchema.safeParse({ campaignId: formData.get("campaignId") });
-  if (!parsed.success) return { ok: false, message: "Campanha inválida." };
+  if (!parsed.success) return { ok: false, message: "Campanha invA¡lida." };
   const data = new FormData();
   data.append("campaignId", parsed.data.campaignId);
   data.append("status", "PAUSED");
@@ -657,7 +658,7 @@ export async function pauseCampaign(_prevState: ActionState, formData: FormData)
 
 export async function activateCampaign(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = campaignReviewActionSchema.safeParse({ campaignId: formData.get("campaignId") });
-  if (!parsed.success) return { ok: false, message: "Campanha inválida." };
+  if (!parsed.success) return { ok: false, message: "Campanha invA¡lida." };
   const data = new FormData();
   data.append("campaignId", parsed.data.campaignId);
   data.append("status", "ACTIVE");
@@ -673,7 +674,7 @@ export async function toggleCampaignStatus(formData: FormData): Promise<ActionSt
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Status inválido para campanha." };
+    return { ok: false, message: "Status invA¡lido para campanha." };
   }
 
   if (parsed.data.status === "ACTIVE") {
@@ -683,11 +684,11 @@ export async function toggleCampaignStatus(formData: FormData): Promise<ActionSt
     });
 
     if (!campaign) {
-      return { ok: false, message: "Campanha não encontrada." };
+      return { ok: false, message: "Campanha nA£o encontrada." };
     }
 
     if (campaign.reviewStatus !== "APPROVED") {
-      throw new Error("Campanha não pode ser ativada sem aprovação");
+      throw new Error("Campanha nA£o pode ser ativada sem aprovaA§A£o");
     }
   }
 
@@ -708,12 +709,14 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
 
   const parsed = reviewSubmissionSchema.safeParse({ submissionId: formData.get("submissionId") });
   if (!parsed.success) {
-    return { ok: false, message: "Submissão inválida." };
+    return { ok: false, message: "SubmissA£o invA¡lida." };
   }
 
   const rules = tokenCostRules();
   let alreadyApproved = false;
   let failedCampaignId: string | null = null;
+  let approvedUserId: string | null = null;
+  let approvedPlatform: "INSTAGRAM" | "TIKTOK" | "FACEBOOK" | "YOUTUBE" | "GOOGLE" | "LOCAL" | "OTHER" | null = null;
 
   try {
     await db.$transaction(async (tx) => {
@@ -725,6 +728,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
               id: true, 
       title: true, 
       companyId: true,
+      socialPlatform: true,
             },
           },
         },
@@ -755,13 +759,15 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
         alreadyApproved = true;
         return;
       }
+      approvedUserId = submission.userId;
+      approvedPlatform = submission.campaign.socialPlatform;
 
       if (submission.campaign.companyId) {
         const spent = await spendCompanyTokens(
           submission.campaign.companyId,
           rules.approvedAction,
           "CAMPAIGN_ACTION",
-          `Aprovação de tarefa na campanha: ${submission.campaign.title}`,
+          `AprovaA§A£o de tarefa na campanha: ${submission.campaign.title}`,
           submission.id,
           tx,
         );
@@ -778,7 +784,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
             userId: submission.userId, 
       type: "CREDIT",
             amount: submission.rewardAmount, 
-      description: "Crédito por tarefa aprovada",
+      description: "CrA©dito por tarefa aprovada",
             referenceId: submission.id,
           },
         });
@@ -793,7 +799,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
               checkedAt: day1, 
       details: {
                 scheduled: true, 
-      note: "Verificação externa agendada +1 dia",
+      note: "VerificaA§A£o externa agendada +1 dia",
               },
             },
             {
@@ -802,7 +808,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
               checkedAt: day3, 
       details: {
                 scheduled: true, 
-      note: "Verificação externa agendada +3 dias",
+      note: "VerificaA§A£o externa agendada +3 dias",
               },
             },
           ],
@@ -820,7 +826,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
     });
   } catch (error) {
     if (error instanceof Error && error.message === "SUBMISSION_NOT_FOUND") {
-      return { ok: false, message: "Submissão não encontrada." };
+      return { ok: false, message: "SubmissA£o nA£o encontrada." };
     }
 
     if (error instanceof Error && error.message === "COMPANY_TOKENS_EMPTY") {
@@ -837,7 +843,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
       revalidatePath("/empresa/campanhas");
       return {
         ok: false, 
-      message: "A empresa não possui tokens suficientes para aprovar esta tarefa. A campanha foi pausada automaticamente.",
+      message: "A empresa nA£o possui tokens suficientes para aprovar esta tarefa. A campanha foi pausada automaticamente.",
       };
     }
     throw error;
@@ -848,7 +854,12 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
     revalidatePath("/usuario/tarefas");
     revalidatePath("/usuario/carteira");
     revalidatePath("/usuario/dashboard");
-    return { ok: true, message: "Submissão já aprovada anteriormente." };
+    return { ok: true, message: "SubmissA£o jA¡ aprovada anteriormente." };
+  }
+
+  if (approvedUserId && approvedPlatform) {
+    const xpReward = getXpRewardForMission(approvedPlatform, "OTHER");
+    await applyMissionApprovalReward(approvedUserId, xpReward);
   }
 
   revalidatePath("/admin/tarefas");
@@ -859,7 +870,7 @@ export async function approveSubmission(formData: FormData): Promise<ActionState
   revalidatePath("/empresa/plano");
   revalidatePath("/empresa/campanhas");
 
-  return { ok: true, message: "Tarefa aprovada e crédito lançado na carteira." };
+  return { ok: true, message: "Tarefa aprovada e crA©dito lanA§ado na carteira." };
 }
 
 export async function rejectSubmission(formData: FormData): Promise<ActionState> {
@@ -871,16 +882,16 @@ export async function rejectSubmission(formData: FormData): Promise<ActionState>
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Informe um motivo válido para a reprovação." };
+    return { ok: false, message: "Informe um motivo vA¡lido para a reprovaA§A£o." };
   }
 
   const submission = await db.taskSubmission.findUnique({ where: { id: parsed.data.submissionId } });
   if (!submission) {
-    return { ok: false, message: "Submissão não encontrada." };
+    return { ok: false, message: "SubmissA£o nA£o encontrada." };
   }
 
   if (submission.status === "APPROVED") {
-    return { ok: false, message: "Não é possível reprovar uma tarefa já aprovada." };
+    return { ok: false, message: "NA£o A© possA­vel reprovar uma tarefa jA¡ aprovada." };
   }
 
   await db.taskSubmission.update({
@@ -903,7 +914,7 @@ export async function approveWithdrawal(formData: FormData): Promise<ActionState
 
   const parsed = withdrawalActionSchema.safeParse({ requestId: formData.get("requestId") });
   if (!parsed.success) {
-    return { ok: false, message: "Saque inválido." };
+    return { ok: false, message: "Saque invA¡lido." };
   }
 
   const request = await db.withdrawalRequest.findUnique({
@@ -912,10 +923,10 @@ export async function approveWithdrawal(formData: FormData): Promise<ActionState
   });
 
   if (!request) {
-    return { ok: false, message: "Saque não encontrado." };
+    return { ok: false, message: "Saque nA£o encontrado." };
   }
 
-  if (!request.user.onboardingCompleted || !request.user.cpf || !request.user.pixKey || !request.user.bankName) { return { ok: false, message: "Usuário com cadastro incompleto para saque." };
+  if (!request.user.onboardingCompleted || !request.user.cpf || !request.user.pixKey || !request.user.bankName) { return { ok: false, message: "UsuA¡rio com cadastro incompleto para saque." };
   }
 
   await db.withdrawalRequest.update({
@@ -937,16 +948,16 @@ export async function markWithdrawalPaid(formData: FormData): Promise<ActionStat
 
   const parsed = withdrawalActionSchema.safeParse({ requestId: formData.get("requestId") });
   if (!parsed.success) {
-    return { ok: false, message: "Saque inválido." };
+    return { ok: false, message: "Saque invA¡lido." };
   }
 
   const request = await db.withdrawalRequest.findUnique({ where: { id: parsed.data.requestId } });
   if (!request) {
-    return { ok: false, message: "Saque não encontrado." };
+    return { ok: false, message: "Saque nA£o encontrado." };
   }
 
   if (request.status === "PAID") {
-    return { ok: true, message: "Saque já está marcado como pago." };
+    return { ok: true, message: "Saque jA¡ estA¡ marcado como pago." };
   }
 
   await db.$transaction(async (tx) => {
@@ -996,16 +1007,16 @@ export async function rejectWithdrawal(formData: FormData): Promise<ActionState>
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Informe um motivo válido para a reprovação." };
+    return { ok: false, message: "Informe um motivo vA¡lido para a reprovaA§A£o." };
   }
 
   const request = await db.withdrawalRequest.findUnique({ where: { id: parsed.data.requestId } });
   if (!request) {
-    return { ok: false, message: "Saque não encontrado." };
+    return { ok: false, message: "Saque nA£o encontrado." };
   }
 
   if (request.status === "PAID") {
-    return { ok: false, message: "Não é possível reprovar um saque já pago." };
+    return { ok: false, message: "NA£o A© possA­vel reprovar um saque jA¡ pago." };
   }
 
   await db.$transaction(async (tx) => {
@@ -1057,31 +1068,31 @@ export async function rejectWithdrawal(formData: FormData): Promise<ActionState>
   revalidatePath("/usuario/saques");
   revalidatePath("/usuario/carteira");
 
-  return { ok: true, message: "Saque reprovado e estorno processado quando aplicável." };
+  return { ok: true, message: "Saque reprovado e estorno processado quando aplicA¡vel." };
 }
 
 export async function blockUser(formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const userId = formData.get("userId");
-  if (typeof userId !== "string" || userId.length === 0) { return { ok: false, message: "Usuário inválido." };
+  if (typeof userId !== "string" || userId.length === 0) { return { ok: false, message: "UsuA¡rio invA¡lido." };
   }
 
   await db.user.update({ where: { id: userId }, data: { status: "BLOCKED" } });
   revalidatePath("/admin/usuarios");
   revalidatePath(`/admin/usuarios/${userId}`);
-  return { ok: true, message: "Usuário bloqueado." };
+  return { ok: true, message: "UsuA¡rio bloqueado." };
 }
 
 export async function unblockUser(formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const userId = formData.get("userId");
-  if (typeof userId !== "string" || userId.length === 0) { return { ok: false, message: "Usuário inválido." };
+  if (typeof userId !== "string" || userId.length === 0) { return { ok: false, message: "UsuA¡rio invA¡lido." };
   }
 
   await db.user.update({ where: { id: userId }, data: { status: "ACTIVE" } });
   revalidatePath("/admin/usuarios");
   revalidatePath(`/admin/usuarios/${userId}`);
-  return { ok: true, message: "Usuário desbloqueado." };
+  return { ok: true, message: "UsuA¡rio desbloqueado." };
 }
 
 export async function updateUserRole(formData: FormData): Promise<ActionState> {
@@ -1093,11 +1104,11 @@ export async function updateUserRole(formData: FormData): Promise<ActionState> {
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Role inválida." };
+    return { ok: false, message: "Role invA¡lida." };
   }
 
   if (parsed.data.userId === admin.id && parsed.data.role !== "ADMIN") {
-    return { ok: false, message: "Você não pode remover seu próprio acesso de administrador." };
+    return { ok: false, message: "VocAª nA£o pode remover seu prA³prio acesso de administrador." };
   }
 
   await db.user.update({
@@ -1108,7 +1119,7 @@ export async function updateUserRole(formData: FormData): Promise<ActionState> {
   revalidatePath("/admin/usuarios");
   revalidatePath(`/admin/usuarios/${parsed.data.userId}`);
 
-  return { ok: true, message: "Role do usuário atualizada." };
+  return { ok: true, message: "Role do usuA¡rio atualizada." };
 }
 
 export async function adjustCompanyTokens(formData: FormData): Promise<ActionState> {
@@ -1121,7 +1132,7 @@ export async function adjustCompanyTokens(formData: FormData): Promise<ActionSta
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Dados inválidos para ajuste de tokens." };
+    return { ok: false, message: "Dados invA¡lidos para ajuste de tokens." };
   }
 
   const { companyId, amount, description } = parsed.data;
@@ -1132,7 +1143,7 @@ export async function adjustCompanyTokens(formData: FormData): Promise<ActionSta
   });
 
   if (!company) {
-    return { ok: false, message: "Empresa não encontrada." };
+    return { ok: false, message: "Empresa nA£o encontrada." };
   }
 
   if (amount < 0 && company.tokensBalance < Math.abs(amount)) {
@@ -1183,7 +1194,7 @@ export async function updateCompanyPlan(formData: FormData): Promise<ActionState
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Dados inválidos para plano da empresa." };
+    return { ok: false, message: "Dados invA¡lidos para plano da empresa." };
   }
 
   const limits = getPlanLimits(parsed.data.plan);
@@ -1237,10 +1248,10 @@ export async function createCompany(formData: FormData): Promise<ActionState> {
   const normalizedCnpj = digitsOnly(data.cnpj);
   const normalizedWhatsapp = digitsOnly(data.responsibleWhatsapp);
   if (normalizedCnpj.length !== 14) {
-    return { ok: false, message: "CNPJ deve ter 14 números." };
+    return { ok: false, message: "CNPJ deve ter 14 nAºmeros." };
   }
   if (normalizedWhatsapp.length !== 11) {
-    return { ok: false, message: "WhatsApp deve ter DDD + número, total de 11 dígitos." };
+    return { ok: false, message: "WhatsApp deve ter DDD + nAºmero, total de 11 dA­gitos." };
   }
   const limits = getPlanLimits(data.plan);
   const publicId = await generateCompanyPublicId();
@@ -1277,7 +1288,7 @@ export async function createCompany(formData: FormData): Promise<ActionState> {
         companyId: created.id, 
       type: "MONTHLY_GRANT",
         amount: data.tokensBalance, 
-      description: `Crédito inicial da empresa (${data.plan})`,
+      description: `CrA©dito inicial da empresa (${data.plan})`,
         referenceId: "",
       },
     });
@@ -1303,7 +1314,7 @@ export async function createCompany(formData: FormData): Promise<ActionState> {
 
   revalidatePath("/admin/empresas");
   revalidatePath("/admin/dashboard");
-  return { ok: true, message: `Empresa cadastrada com sucesso (${company.publicId}). Senha temporária gerada.` };
+  return { ok: true, message: `Empresa cadastrada com sucesso (${company.publicId}). Senha temporA¡ria gerada.` };
 }
 
 async function applyCompanyStatus(
@@ -1318,7 +1329,7 @@ async function applyCompanyStatus(
   });
 
   if (!company) {
-    return { ok: false, message: "Empresa não encontrada." };
+    return { ok: false, message: "Empresa nA£o encontrada." };
   }
 
   const updates =
@@ -1364,7 +1375,7 @@ export async function approveCompany(_prevState: ActionState, formData: FormData
   const admin = await requireAdmin();
   const parsed = companyActionSchema.safeParse({ companyId: formData.get("companyId") });
   if (!parsed.success) {
-    return { ok: false, message: "Empresa inválida para aprovação." };
+    return { ok: false, message: "Empresa invA¡lida para aprovaA§A£o." };
   }
   return applyCompanyStatus(admin.id, parsed.data.companyId, "ACTIVE", undefined);
 }
@@ -1377,7 +1388,7 @@ export async function rejectCompany(_prevState: ActionState, formData: FormData)
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Informe um motivo válido para reprovar a empresa." };
+    return { ok: false, message: "Informe um motivo vA¡lido para reprovar a empresa." };
   }
 
   return applyCompanyStatus(admin.id, parsed.data.companyId, "REJECTED", parsed.data.rejectionReason);
@@ -1387,7 +1398,7 @@ export async function blockCompany(_prevState: ActionState, formData: FormData):
   const admin = await requireAdmin();
   const parsed = companyActionSchema.safeParse({ companyId: formData.get("companyId") });
   if (!parsed.success) {
-    return { ok: false, message: "Empresa inválida para bloqueio." };
+    return { ok: false, message: "Empresa invA¡lida para bloqueio." };
   }
   return applyCompanyStatus(admin.id, parsed.data.companyId, "BLOCKED");
 }
@@ -1416,13 +1427,13 @@ export async function updateCompany(_prevState: ActionState, formData: FormData)
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Dados inválidos para atualizar a empresa." };
+    return { ok: false, message: "Dados invA¡lidos para atualizar a empresa." };
   }
 
   const data = parsed.data;
   const normalizedWhatsapp = data.responsibleWhatsapp ? digitsOnly(data.responsibleWhatsapp) : undefined;
   if (normalizedWhatsapp && normalizedWhatsapp.length !== 11) {
-    return { ok: false, message: "WhatsApp deve ter DDD + número, total de 11 dígitos." };
+    return { ok: false, message: "WhatsApp deve ter DDD + nAºmero, total de 11 dA­gitos." };
   }
 
   await db.company.update({
@@ -1450,10 +1461,10 @@ export async function updateCompanyStatus(formData: FormData): Promise<ActionSta
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Status inválido para empresa." };
+    return { ok: false, message: "Status invA¡lido para empresa." };
   }
 
-  if (parsed.data.status === "REJECTED" && (!parsed.data.rejectionReason || parsed.data.rejectionReason.length < 6)) { return { ok: false, message: "Informe um motivo válido para reprovar a empresa." };
+  if (parsed.data.status === "REJECTED" && (!parsed.data.rejectionReason || parsed.data.rejectionReason.length < 6)) { return { ok: false, message: "Informe um motivo vA¡lido para reprovar a empresa." };
   }
 
   return applyCompanyStatus(admin.id, parsed.data.companyId, parsed.data.status, parsed.data.rejectionReason);
@@ -1473,7 +1484,7 @@ export async function addCompanySocialPost(formData: FormData): Promise<ActionSt
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Dados inválidos para adicionar post." };
+    return { ok: false, message: "Dados invA¡lidos para adicionar post." };
   }
 
   await db.companySocialPost.create({
@@ -1500,7 +1511,7 @@ export async function importCompanyTestPosts(formData: FormData): Promise<Action
   });
 
   if (!parsed.success) {
-    return { ok: false, message: "Plataforma inválida para importação de teste." };
+    return { ok: false, message: "Plataforma invA¡lida para importaA§A£o de teste." };
   }
 
   const items = Array.from({ length: 10 }).map((_, index) => {
@@ -1510,7 +1521,7 @@ export async function importCompanyTestPosts(formData: FormData): Promise<Action
       platform: parsed.data.platform, 
       url: `https://exemplo.com/${parsed.data.platform.toLowerCase()}/post-${n}`,
       title: `Post de teste ${n}`,
-      description: `Conteúdo de teste para ${parsed.data.platform}.`,
+      description: `ConteAºdo de teste para ${parsed.data.platform}.`,
       thumbnailUrl: `https://picsum.photos/seed/${parsed.data.platform}-${n}/640/360`,
       durationSeconds: 15 + n * 3, 
       publishedAt: new Date(),
