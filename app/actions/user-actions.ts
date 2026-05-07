@@ -227,7 +227,7 @@ export async function requestWithdrawalAction(_prevState: ActionState, formData:
       const request = await tx.withdrawalRequest.create({
         data: {
           userId: user.id, amount: amountCents,
-          pixKey: parsed.data.pixKey, status: "PENDING",
+          pixKey: parsed.data.pixKey, status: "PENDING", reviewedAt: new Date(0), paidAt: new Date(0), rejectionReason: "",
         },
       });
 

@@ -14,6 +14,8 @@ export async function startCompanyImpersonation(adminId: string, companyId: stri
       adminId,
       companyId,
       startedAt: new Date(),
+      endedAt: new Date(0),
+      durationSeconds: 0,
     },
   });
 
@@ -43,7 +45,7 @@ export async function stopImpersonation(): Promise<void> {
       const startedAt = new Date(payload.startedAt);
       const duration = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
       await db.adminImpersonationLog.updateMany({
-        where: { id: payload.logId, endedAt: null },
+        where: { id: payload.logId },
         data: {
           endedAt: new Date(),
           durationSeconds: duration,

@@ -47,8 +47,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const createdUser = await db.user.create({
         data: {
-          name: user.name?.trim() || "Usuário",
+          name: user.name?.trim() || "UsuÃ¡rio",
           email,
+          passwordHash: "",
+          phone: "",
           status: "ACTIVE",
           onboardingCompleted: false,
           role: "USER",

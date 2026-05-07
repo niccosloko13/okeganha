@@ -63,7 +63,7 @@ export async function spendCompanyTokens(
     data: {
       companyId,
       type, amount: -Math.abs(amount),
-      description, referenceId: referenceId ?? null,
+      description, referenceId: referenceId ?? "",
     },
   });
 
@@ -92,7 +92,8 @@ export async function grantMonthlyTokens(companyId: string, tx: DBLike): Promise
   await client.companyTokenLedger.create({
     data: {
       companyId,
-      type: "MONTHLY_GRANT", amount: limits.monthlyTokens, description: `Crédito mensal do plano ${limits.label}`,
+      type: "MONTHLY_GRANT", amount: limits.monthlyTokens, description: `Credito mensal do plano ${limits.label}`,
+      referenceId: "",
     },
   });
 }

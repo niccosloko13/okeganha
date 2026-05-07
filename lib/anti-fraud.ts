@@ -63,7 +63,7 @@ async function resolveRequestMeta() {
 export async function registerUserDevice(userId: string, input: DeviceFingerprintInput & { clickIntervalMs: number }) {
   const req = await resolveRequestMeta();
   const fingerprintHash = hashDeviceFingerprint(input);
-  const botDetection = detectBotSignals({ ...input, userAgent: req.userAgent, clickIntervalMs: input.clickIntervalMs } as BotDetectionInput);
+  const botDetection = detectBotSignals({ ...input, userAgent: req.userAgent ?? "", clickIntervalMs: input.clickIntervalMs } as BotDetectionInput);
 
   const device = await db.userDevice.upsert({
     where: {
@@ -74,15 +74,15 @@ export async function registerUserDevice(userId: string, input: DeviceFingerprin
     },
     update: {
       lastSeen: new Date(),
-      userAgent: req.userAgent,
-      ipAddress: req.ipAddress,
+      userAgent: req.userAgent ?? "",
+      ipAddress: req.ipAddress ?? "",
       isSuspicious: botDetection.suspicious,
     },
     create: {
       userId,
       fingerprintHash,
-      userAgent: req.userAgent,
-      ipAddress: req.ipAddress,
+      userAgent: req.userAgent ?? "",
+      ipAddress: req.ipAddress ?? "",
       isSuspicious: botDetection.suspicious,
     },
   });
@@ -134,16 +134,16 @@ export async function logUserActivity(
     data: {
       userId,
       type,
-      sessionId,
-      deviceId,
-      campaignId,
-      taskId,
-      interactionType,
-      durationSeconds,
-      focusLossCount,
-      ipAddress: req.ipAddress,
-      userAgent: req.userAgent,
-      metadata: safeObject(metadata),
+      sessionId: sessionId ?? "",
+      deviceId: deviceId ?? "",
+      campaignId: campaignId ?? "",
+      taskId: taskId ?? "",
+      interactionType: interactionType ?? "",
+      durationSeconds: durationSeconds ?? 0,
+      focusLossCount: focusLossCount ?? 0,
+      ipAddress: req.ipAddress ?? "",
+      userAgent: req.userAgent ?? "",
+      metadata: safeObject(metadata) ?? Prisma.JsonNull,
     },
   });
 }
@@ -159,7 +159,7 @@ export async function addRiskEvent(
       userId,
       severity,
       reason,
-      metadata: safeObject(metadata),
+      metadata: safeObject(metadata) ?? Prisma.JsonNull,
     },
   });
 }
@@ -279,12 +279,21 @@ export async function blockUserForFraud(userId: string, reason: string): Promise
 
   await db.$transaction(async (tx) => {
     await tx.user.update({ where: { id: userId }, data: { status: "BLOCKED" } });
-    await tx.userRiskEvent.create({ data: { userId, severity: "CRITICAL", reason } });
+    await tx.userRiskEvent.create({ data: { userId, severity: "CRITICAL", reason, metadata: Prisma.JsonNull } });
     await tx.userActivityLog.create({
       data: {
         userId,
         type: "ACCOUNT_BLOCKED",
-        metadata: safeObject({ reason }),
+        sessionId: "",
+        deviceId: "",
+        campaignId: "",
+        taskId: "",
+        interactionType: "",
+        durationSeconds: 0,
+        focusLossCount: 0,
+        ipAddress: "",
+        userAgent: "",
+        metadata: safeObject({ reason }) ?? Prisma.JsonNull,
       },
     });
   });
@@ -380,10 +389,10 @@ export async function runWithdrawalRiskCheck(userId: string, withdrawalId: strin
   await db.withdrawalRiskCheck.create({
     data: {
       userId,
-      withdrawalId: withdrawalId ?? null,
+      withdrawalId: withdrawalId ?? "",
       score: score.score,
       decision,
-      reasons: safeObject({ reasons }),
+      reasons: safeObject({ reasons }) ?? Prisma.JsonNull,
     },
   });
 
