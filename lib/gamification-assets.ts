@@ -43,3 +43,9 @@ export const GAMIFICATION_ASSETS = {
 } as const;
 
 export type MissionRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY" | "MYTHIC";
+
+export function getLevelBadgeAsset(level: number): string {
+  const safeLevel = Math.max(1, Math.min(99, Math.floor(level || 1)));
+  if (safeLevel === 1) return "/gamification/badges/nivel.png";
+  return GAMIFICATION_ASSETS.badges.level;
+}

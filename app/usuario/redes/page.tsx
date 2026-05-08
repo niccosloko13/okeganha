@@ -2,48 +2,50 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 import { GamificationShell, StatsCard } from "@/components/gamification";
-import { UserSocialAccountsForm } from "@/components/usuario/UserSocialAccountsForm";
+import { SocialConnectCard } from "@/components/gamification/SocialConnectCard";
 
-const platforms = [
-  { key: "INSTAGRAM", label: "Instagram" },
-  { key: "TIKTOK", label: "TikTok" },
-  { key: "FACEBOOK", label: "Facebook" },
-  { key: "GOOGLE", label: "Google" },
-  { key: "YOUTUBE", label: "YouTube" },
-] as const;
+const platforms = ["INSTAGRAM", "TIKTOK", "FACEBOOK"] as const;
+
+type StatusUI = "NOT_CONNECTED" | "PENDING" | "CONNECTED" | "ERROR" | "RECHECK_REQUIRED";
+
+function mapStatus(status?: string): StatusUI {
+  if (!status) return "NOT_CONNECTED";
+  if (status === "CONNECTED") return "CONNECTED";
+  if (status === "PENDING") return "PENDING";
+  return "RECHECK_REQUIRED";
+}
 
 export default async function RedesPage() {
   const user = await requireUser();
   const accounts = await db.userSocialAccount.findMany({
     where: { userId: user.id },
-    select: { id: true, platform: true, profileUrl: true, username: true, status: true, connectedAt: true },
+    select: { platform: true, profileUrl: true, username: true, status: true },
   });
 
   const connected = accounts.filter((a) => a.status === "CONNECTED").length;
 
   return (
-    <GamificationShell title="Redes" subtitle="Conecte perfis para liberar mais missoes sociais.">
+    <GamificationShell title="Redes" subtitle="Conecte com seguranca para desbloquear mais missoes sociais.">
       <section className="grid gap-3 md:grid-cols-3">
         <StatsCard label="Conectadas" value={String(connected)} />
         <StatsCard label="Total" value={String(platforms.length)} />
-        <StatsCard label="Nivel social" value={connected >= 3 ? "ALTO" : "INICIAL"} />
+        <StatsCard label="Confianca" value={connected >= 2 ? "ALTA" : "EM EVOLUCAO"} />
       </section>
 
       <section className="rounded-2xl border border-[#6f45a3] bg-[#1a1030]/85 p-4 text-sm text-[#d9c4f2]">
-        Modo seguro: conexao manual por URL/usuario. Sem senha e sem automacao externa.
+        Conexao social sem senha: nunca solicitamos credenciais. Fluxo real sera via autorizacao segura quando disponivel.
       </section>
 
-      <section className="space-y-3">
+      <section className="grid gap-3 md:grid-cols-3">
         {platforms.map((platform) => {
-          const account = accounts.find((item) => item.platform === platform.key);
+          const account = accounts.find((item) => item.platform === platform);
           return (
-            <UserSocialAccountsForm
-              key={platform.key}
-              platform={platform.key}
-              platformLabel={platform.label}
-              profileUrl={account?.profileUrl ?? ""}
+            <SocialConnectCard
+              key={platform}
+              platform={platform}
               username={account?.username ?? ""}
-              status={account?.status ?? "DISCONNECTED"}
+              profileUrl={account?.profileUrl ?? ""}
+              status={mapStatus(account?.status)}
             />
           );
         })}
