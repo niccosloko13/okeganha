@@ -5,6 +5,7 @@ import { ReactNode, memo } from "react";
 import { GAMIFICATION_ASSETS, getLevelBadgeAsset, MissionRarity } from "@/lib/gamification-assets";
 import { imgProps } from "@/lib/gamification-image";
 import { GT, RARITY_STYLE } from "@/styles/gamification-theme";
+import { logoutAction } from "@/app/actions/auth-actions";
 
 export function GamificationShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -15,8 +16,13 @@ export function GamificationShell({ title, subtitle, children }: { title: string
           <nav className="mt-4 space-y-2 text-sm">
             <Link href="/usuario/dashboard" className="block rounded-xl bg-white/10 px-3 py-2">Inicio</Link>
             <Link href="/usuario/missoes" className="block rounded-xl px-3 py-2 hover:bg-white/10">Missoes</Link>
+            <Link href="/usuario/caixa" className="block rounded-xl px-3 py-2 hover:bg-white/10">Caixa</Link>
             <Link href="/usuario/carteira" className="block rounded-xl px-3 py-2 hover:bg-white/10">Carteira</Link>
             <Link href="/usuario/perfil" className="block rounded-xl px-3 py-2 hover:bg-white/10">Perfil</Link>
+            <Link href="/usuario/redes" className="block rounded-xl px-3 py-2 hover:bg-white/10">Redes</Link>
+            <form action={logoutAction}>
+              <button type="submit" className="mt-2 w-full rounded-xl border border-[#6f45a3] bg-[#241640] px-3 py-2 text-left text-[#f1e7ff] hover:bg-[#2a1848]">Sair</button>
+            </form>
           </nav>
         </aside>
         <main className="space-y-3 md:space-y-4">
@@ -39,7 +45,7 @@ export function BottomUserNav() {
       <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 text-center text-[11px] text-[#d6bfef]">
         <Link href="/usuario/dashboard" className={cls}>Inicio</Link>
         <Link href="/usuario/missoes" className={cls}>Missoes</Link>
-        <Link href="/usuario/dashboard" className={cls}>Caixa</Link>
+        <Link href="/usuario/caixa" className={cls}>Caixa</Link>
         <Link href="/usuario/carteira" className={cls}>Carteira</Link>
         <Link href="/usuario/perfil" className={cls}>Perfil</Link>
       </div>
