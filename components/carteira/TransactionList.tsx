@@ -18,7 +18,7 @@ type TransactionListProps = {
 export function TransactionList({ transactions }: TransactionListProps) {
   return (
     <section className="ok-card space-y-2 p-4">
-      <h2 className="text-lg font-semibold text-[#4d2e75]">Histrico</h2>
+      <h2 className="text-lg font-semibold text-[#4d2e75]">Historico</h2>
       {transactions.map((tx) => {
         const signed = walletSignedAmount(tx.type, tx.amount);
         const positive = signed >= 0;

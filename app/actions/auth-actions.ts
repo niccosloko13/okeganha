@@ -113,17 +113,7 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
     }
 
     if (user.role === "COMPANY") {
-      const company = user.companyId ? await db.company.findUnique({
-            where: { id: user.companyId },
-            select: { status: true },
-          })
-        : null;
-
-      if (company?.status === "ACTIVE") {
-        redirect("/empresa/dashboard");
-      }
-
-      redirect("/empresa/status");
+      redirect("/empresa/acesso");
     }
 
     if (!user.onboardingCompleted) {

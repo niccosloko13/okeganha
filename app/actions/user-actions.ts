@@ -121,6 +121,19 @@ export async function submitTaskProofAction(_prevState: ActionState, formData: F
     }
   }
 
+  const duplicatePending = await db.taskSubmission.findFirst({
+    where: {
+      userId: user.id,
+      taskId: task.id,
+      status: "PENDING",
+    },
+    select: { id: true },
+  });
+
+  if (duplicatePending) {
+    return { ok: false, message: "Ja existe uma comprovacao pendente para esta missao." };
+  }
+
   await db.taskSubmission.create({
     data: {
       userId: user.id, taskId: task.id,
@@ -405,11 +418,11 @@ export async function upsertUserSocialAccountAction(_prevState: ActionState, for
       },
     },
     update: {
-      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "CONNECTED", connectedAt: new Date(),
+      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "PENDING", connectedAt: new Date(),
     },
     create: {
       userId: user.id, platform: parsed.data.platform,
-      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "CONNECTED", connectedAt: new Date(),
+      profileUrl: parsed.data.profileUrl, username: parsed.data.username || "", status: "PENDING", connectedAt: new Date(),
     },
   });
   await logUserActivity(user.id, "SOCIAL_ACCOUNT_UPDATE", { platform: parsed.data.platform });

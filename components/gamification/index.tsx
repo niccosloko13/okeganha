@@ -6,6 +6,7 @@ import { GAMIFICATION_ASSETS, getLevelBadgeAsset, MissionRarity } from "@/lib/ga
 import { imgProps } from "@/lib/gamification-image";
 import { GT, RARITY_STYLE } from "@/styles/gamification-theme";
 import { logoutAction } from "@/app/actions/auth-actions";
+import { ChestIcon, HomeIcon, LogoutIcon, MissionsIcon, ProfileIcon, SocialIcon, WalletIcon } from "@/components/gamification/icons";
 
 export function GamificationShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -14,14 +15,14 @@ export function GamificationShell({ title, subtitle, children }: { title: string
         <aside className={`${GT.card} hidden p-4 md:sticky md:top-4 md:block md:h-fit`}>
           <p className="text-lg font-black text-white">OKEGANHA</p>
           <nav className="mt-4 space-y-2 text-sm">
-            <Link href="/usuario/dashboard" className="block rounded-xl bg-white/10 px-3 py-2">Inicio</Link>
-            <Link href="/usuario/missoes" className="block rounded-xl px-3 py-2 hover:bg-white/10">Missoes</Link>
-            <Link href="/usuario/caixa" className="block rounded-xl px-3 py-2 hover:bg-white/10">Caixa</Link>
-            <Link href="/usuario/carteira" className="block rounded-xl px-3 py-2 hover:bg-white/10">Carteira</Link>
-            <Link href="/usuario/perfil" className="block rounded-xl px-3 py-2 hover:bg-white/10">Perfil</Link>
-            <Link href="/usuario/redes" className="block rounded-xl px-3 py-2 hover:bg-white/10">Redes</Link>
+            <Link href="/usuario/dashboard" className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2"><HomeIcon className="h-4 w-4" />Inicio</Link>
+            <Link href="/usuario/missoes" className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-white/10"><MissionsIcon className="h-4 w-4" />Missoes</Link>
+            <Link href="/usuario/caixa" className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-white/10"><ChestIcon className="h-4 w-4" />Caixa</Link>
+            <Link href="/usuario/carteira" className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-white/10"><WalletIcon className="h-4 w-4" />Carteira</Link>
+            <Link href="/usuario/perfil" className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-white/10"><ProfileIcon className="h-4 w-4" />Perfil</Link>
+            <Link href="/usuario/redes" className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-white/10"><SocialIcon className="h-4 w-4" />Redes</Link>
             <form action={logoutAction}>
-              <button type="submit" className="mt-2 w-full rounded-xl border border-[#6f45a3] bg-[#241640] px-3 py-2 text-left text-[#f1e7ff] hover:bg-[#2a1848]">Sair</button>
+              <button type="submit" className="mt-2 flex w-full items-center gap-2 rounded-xl border border-[#6f45a3] bg-[#241640] px-3 py-2 text-left text-[#f1e7ff] hover:bg-[#2a1848]"><LogoutIcon className="h-4 w-4" />Sair</button>
             </form>
           </nav>
         </aside>
@@ -43,11 +44,11 @@ export function BottomUserNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#12081f]/95 px-2 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 backdrop-blur-sm md:hidden">
       <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 text-center text-[11px] text-[#d6bfef]">
-        <Link href="/usuario/dashboard" className={cls}>Inicio</Link>
-        <Link href="/usuario/missoes" className={cls}>Missoes</Link>
-        <Link href="/usuario/caixa" className={cls}>Caixa</Link>
-        <Link href="/usuario/carteira" className={cls}>Carteira</Link>
-        <Link href="/usuario/perfil" className={cls}>Perfil</Link>
+        <Link href="/usuario/dashboard" className={`${cls} flex flex-col items-center`}><HomeIcon className="h-4 w-4" />Inicio</Link>
+        <Link href="/usuario/missoes" className={`${cls} flex flex-col items-center`}><MissionsIcon className="h-4 w-4" />Missoes</Link>
+        <Link href="/usuario/caixa" className={`${cls} flex flex-col items-center`}><ChestIcon className="h-4 w-4" />Caixa</Link>
+        <Link href="/usuario/carteira" className={`${cls} flex flex-col items-center`}><WalletIcon className="h-4 w-4" />Carteira</Link>
+        <Link href="/usuario/perfil" className={`${cls} flex flex-col items-center`}><ProfileIcon className="h-4 w-4" />Perfil</Link>
       </div>
     </nav>
   );

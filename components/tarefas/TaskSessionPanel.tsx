@@ -52,6 +52,10 @@ export function TaskSessionPanel({ taskId, campaignId, contentUrl }: TaskSession
     if (!session) return 0;
     return Math.max(0, Math.min(100, Math.round((session.activeDuration / session.requiredDuration) * 100)));
   }, [session]);
+  const remainingSeconds = useMemo(() => {
+    if (!session) return 0;
+    return Math.max(0, session.requiredDuration - session.activeDuration);
+  }, [session]);
 
   const startSession = useCallback(async () => {
     setLoading(true);
@@ -72,7 +76,7 @@ export function TaskSessionPanel({ taskId, campaignId, contentUrl }: TaskSession
       setFocusLossCountLocal(0);
       setIsFinalized(false);
       window.open(contentUrl, "_blank", "noopener,noreferrer");
-      setMessage("Sessão iniciada. Mantenha esta aba ativa até completar o tempo mínimo.");
+      setMessage(data.resumed ? "Sessao retomada. Continue para liberar o envio." : "Sessao iniciada. Mantenha esta aba ativa ate completar o tempo minimo.");
     } catch {
       setMessage("Erro ao iniciar sessão de tarefa.");
     } finally {
@@ -187,6 +191,9 @@ export function TaskSessionPanel({ taskId, campaignId, contentUrl }: TaskSession
           <div className="rounded-2xl border border-[#ecd7ff] bg-white p-3">
             <p className="text-sm font-semibold text-[#5b2f85]">Tempo ativo: {formatTime(session.activeDuration)}</p>
             <p className="text-xs text-[#7a5a99]">Tempo mínimo: {formatTime(session.requiredDuration)}</p>
+            <p className="text-xs font-semibold text-[#6b38a0]">
+              {canFinish ? "Pronto para envio" : `Em andamento: faltam ${formatTime(remainingSeconds)}`}
+            </p>
             <p className="text-xs text-[#7a5a99]">Perdas de foco: {Math.max(session.focusLossCount, focusLossCountLocal)}</p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#f1e4ff]">
               <div className="h-full rounded-full bg-gradient-to-r from-[#ff63bc] via-[#c248ff] to-[#7a2fbc]" style={{ width: `${progress}%` }} />

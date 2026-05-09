@@ -5,6 +5,7 @@ import { requireRegularUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { applyMissionStartCost, getEnergyCostForMission, refillDailyEnergy } from "@/lib/gamification";
 import { startTaskSessionSchema } from "@/lib/validations";
+import { hasTaskSubmissionToday } from "@/lib/campaign-rules";
 
 export async function POST(request: Request) {
   const user = await requireRegularUser();
@@ -37,6 +38,25 @@ export async function POST(request: Request) {
 
   if (!task) {
     return NextResponse.json({ ok: false, message: "Tarefa indisponivel." }, { status: 404 });
+  }
+
+  const alreadySubmittedToday = await hasTaskSubmissionToday(user.id, task.id);
+  if (alreadySubmittedToday) {
+    return NextResponse.json({ ok: false, message: "Missao ja enviada hoje. Aguarde o proximo ciclo." }, { status: 409 });
+  }
+
+  const openSession = await db.taskSession.findFirst({
+    where: {
+      userId: user.id,
+      taskId: task.id,
+      isCompleted: false,
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, requiredDuration: true, activeDuration: true, focusLossCount: true },
+  });
+
+  if (openSession) {
+    return NextResponse.json({ ok: true, session: openSession, resumed: true });
   }
 
   const userForEnergy = await db.user.findUnique({

@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
-import { Manrope, Sora } from "next/font/google";
 
 import "./globals.css";
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-});
-
-const sora = Sora({
-  variable: "--font-sora",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "OKEGANHA",
@@ -25,7 +14,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${manrope.variable} ${sora.variable} antialiased`}>{children}</body>
+      <body
+        className="antialiased"
+        style={
+          {
+            "--font-manrope":
+              '"Manrope", "Sora", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            "--font-sora":
+              '"Sora", "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          } as React.CSSProperties
+        }
+      >
+        {children}
+      </body>
     </html>
   );
 }

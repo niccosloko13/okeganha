@@ -10,7 +10,7 @@ const highlights = [
 const steps = [
   {
     title: "Escolha uma missao",
-    description: "Encontre campanhas ativas e veja o valor antes de comecar.",
+    description: "Encontre missoes ativas e veja o valor antes de comecar.",
   },
   {
     title: "Execute e envie prova",

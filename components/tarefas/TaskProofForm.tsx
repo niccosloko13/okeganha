@@ -47,6 +47,14 @@ export function TaskProofForm({ taskId, proofType }: TaskProofFormProps) {
         <p className="mt-1 text-xs text-[#8269a0]">{proofHint}</p>
       </div>
 
+      <div className="rounded-2xl border border-[#e4d0ff] bg-[#f8efff] p-3">
+        <p className="text-xs font-semibold text-[#6a4792]">Dados de prova complementares (opcional)</p>
+        <div className="mt-2 grid gap-2 md:grid-cols-2">
+          <input name="proofUsername" className="ok-input" placeholder="@seuusuario" />
+          <input name="proofLink" className="ok-input" placeholder="https://link-da-acao" />
+        </div>
+      </div>
+
       {state.message ? <p className={state.ok ? "text-sm text-okBlueDark" : "text-sm text-okPink"}>{state.message}</p> : null}
 
       <button disabled={pending} type="submit" className="ok-btn-primary w-full disabled:opacity-60">
