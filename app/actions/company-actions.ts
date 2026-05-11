@@ -100,7 +100,7 @@ export async function companyLoginAction(_prevState: ActionState, formData: Form
 
   await createCompanySession(company.id, company.email);
   if (company.status === "ACTIVE") {
-    redirect("/empresa/dashboard");
+    redirect("/rela/dashboard");
   }
   redirect("/empresa/status");
 }

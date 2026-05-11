@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirectIfAuthenticatedAwayFromRelaAuth } from "@/lib/rela-auth";
 
-export default function RelaLandingPage() {
+export default async function RelaLandingPage() {
+  await redirectIfAuthenticatedAwayFromRelaAuth();
   return (
     <main className="min-h-screen bg-[#090b13] text-white">
       <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-12 md:px-6 md:pt-20">

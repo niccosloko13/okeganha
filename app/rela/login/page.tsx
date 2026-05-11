@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { CompanyLoginForm } from "@/components/empresa/CompanyLoginForm";
+import { redirectIfAuthenticatedAwayFromRelaAuth } from "@/lib/rela-auth";
 
-export default function RelaLoginPage() {
+export default async function RelaLoginPage() {
+  await redirectIfAuthenticatedAwayFromRelaAuth();
+
   return (
     <main className="min-h-screen bg-[#090b13] text-white">
       <section className="mx-auto flex w-full max-w-md flex-col justify-center px-4 py-10">
@@ -9,12 +13,8 @@ export default function RelaLoginPage() {
           <h1 className="mt-3 text-3xl font-black text-[#ebf3ff]">Entrar</h1>
           <p className="mt-2 text-sm text-[#9fb6d8]">Acesse o painel de campanhas locais e performance.</p>
 
-          <div className="mt-6 space-y-3">
-            <input className="w-full rounded-xl border border-[#32486f] bg-[#131f36] px-3 py-3 text-sm text-white outline-none" placeholder="email@empresa.com" />
-            <input type="password" className="w-full rounded-xl border border-[#32486f] bg-[#131f36] px-3 py-3 text-sm text-white outline-none" placeholder="Senha" />
-            <button type="button" className="w-full rounded-xl bg-gradient-to-r from-[#3c76ff] to-[#21b8d9] px-4 py-3 text-sm font-bold text-white">
-              Entrar
-            </button>
+          <div className="mt-6">
+            <CompanyLoginForm />
           </div>
 
           <p className="mt-4 text-center text-xs text-[#8ea6cb]">
