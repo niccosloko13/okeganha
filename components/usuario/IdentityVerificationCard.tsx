@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 
 import { requestIdentityVerificationAction } from "@/app/actions/user-actions";
 import type { ActionState } from "@/types";
@@ -21,12 +21,6 @@ export function IdentityVerificationCard({ status }: IdentityVerificationCardPro
   const [state, formAction, pending] = useActionState(requestIdentityVerificationAction, initialState);
   const isVerified = status === "VERIFIED";
 
-  useEffect(() => {
-    if (state.ok) {
-      setIsOpen(false);
-    }
-  }, [state.ok]);
-
   return (
     <>
       <article className="ok-card space-y-3 p-4">
@@ -44,7 +38,7 @@ export function IdentityVerificationCard({ status }: IdentityVerificationCardPro
         </button>
       </article>
 
-      {isOpen ? (
+      {isOpen && !state.ok ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#2f1245]/55 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-[#e8d0ff] bg-white p-5 shadow-[0_30px_45px_-28px_rgba(104,36,158,0.92)]">
             <h4 className="text-lg font-extrabold text-[#3a1658]">Enviar verificação</h4>

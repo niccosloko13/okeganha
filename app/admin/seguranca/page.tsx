@@ -51,8 +51,9 @@ export default async function AdminSegurancaPage() {
   const manySameDay = Array.from(dayCounter.entries()).filter(([, count]) => count >= 4).length;
 
   const shortProofs = submissions.filter((s) => s.proofText.trim().length < 20);
-
-  const recentWithdrawals = withdrawals.filter((w) => Date.now() - w.requestedAt.getTime() <= 1000 * 60 * 60 * 24 * 7);
+  const referenceTime = withdrawals[0]?.requestedAt ?? submissions[0]?.submittedAt ?? new Date(0);
+  const sevenDaysAgo = new Date(referenceTime.getTime() - 1000 * 60 * 60 * 24 * 7);
+  const recentWithdrawals = withdrawals.filter((w) => w.requestedAt >= sevenDaysAgo);
 
   return (
     <section className="space-y-4">

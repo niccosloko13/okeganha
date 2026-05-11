@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
+import { CompanyPlan, CompanyStatus, Prisma } from "@prisma/client";
 
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -29,6 +29,8 @@ export default async function AdminEmpresasPage({ searchParams }: PageProps) {
   const query = typeof params.q === "string" ? params.q.trim()  : "";
   const status = typeof params.status === "string" ? params.status  : "ALL";
   const plan = typeof params.plan === "string" ? params.plan  : "ALL";
+  const companyStatus = status !== "ALL" ? (status as CompanyStatus) : undefined;
+  const companyPlan = plan !== "ALL" ? (plan as CompanyPlan) : undefined;
 
   const where: Prisma.CompanyWhereInput = {
     ...(query
@@ -42,8 +44,8 @@ export default async function AdminEmpresasPage({ searchParams }: PageProps) {
           ],
         }
       : {}),
-    ...(status !== "ALL" ? { status: status as any } : {}),
-    ...(plan !== "ALL" ? { plan: plan as any } : {}),
+    ...(companyStatus ? { status: companyStatus } : {}),
+    ...(companyPlan ? { plan: companyPlan } : {}),
   };
 
   const [companies, totalCount, pendingCount, activeCount, blockedCount, tokensAgg] = await Promise.all([

@@ -78,9 +78,12 @@ export default async function AdminUsuarioDetalhePage({ params, searchParams }: 
   const rejected = user.taskSubmissions.filter((item) => item.status === "REJECTED").length;
   const pendingWithdrawals = user.withdrawals.filter((item) => item.status === "PENDING").length;
   const incomplete = !user.onboardingCompleted || !user.cpf || !user.pixKey || !user.bankName;
-  const sameDayCount = user.taskSubmissions.filter((item) => item.submittedAt >= new Date(Date.now() - 1000 * 60 * 60 * 24)).length;
+  const referenceTime = user.updatedAt ?? user.createdAt;
+  const oneDayAgo = new Date(referenceTime.getTime() - 1000 * 60 * 60 * 24);
+  const sevenDaysAgo = new Date(referenceTime.getTime() - 1000 * 60 * 60 * 24 * 7);
+  const sameDayCount = user.taskSubmissions.filter((item) => item.submittedAt >= oneDayAgo).length;
   const shortProofs = user.taskSubmissions.filter((item) => item.proofText.trim().length < 25).length;
-  const recentWithdrawals = user.withdrawals.filter((item) => item.requestedAt >= new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)).length;
+  const recentWithdrawals = user.withdrawals.filter((item) => item.requestedAt >= sevenDaysAgo).length;
   const risk = calculateRisk({
     pending,
     rejected, blocked: user.status === "BLOCKED",
@@ -97,10 +100,10 @@ export default async function AdminUsuarioDetalhePage({ params, searchParams }: 
   const approvalRate = approved + rejected > 0 ? Math.round((approved / (approved + rejected)) * 100) : 0;
   const filteredTasks = taskStatus ? user.taskSubmissions.filter((item) => item.status === taskStatus) : user.taskSubmissions;
   const filteredWithdrawals = withdrawalStatus ? user.withdrawals.filter((item) => item.status === withdrawalStatus) : user.withdrawals;
-  const recentRiskEvents = user.riskEvents.filter((event) => event.createdAt >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+  const recentRiskEvents = user.riskEvents.filter((event) => event.createdAt >= sevenDaysAgo);
   const highOrCriticalRecent = recentRiskEvents.filter((event) => event.severity === "HIGH" || event.severity === "CRITICAL").length;
   const suspiciousLogsRecent = user.activityLogs.filter(
-    (log) => log.type === "SUSPICIOUS_ACTIVITY" && log.createdAt >= new Date(Date.now() - 24 * 60 * 60 * 1000),
+    (log) => log.type === "SUSPICIOUS_ACTIVITY" && log.createdAt >= oneDayAgo,
   ).length;
 
   const summary =

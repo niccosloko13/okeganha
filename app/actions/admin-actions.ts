@@ -318,10 +318,10 @@ export async function createCampaign(_prevState: ActionState, formData: FormData
           type: template.type, 
       externalUrl: selectedPostUrl ?? data.contentUrl ?? "",
           proofType: template.proofType, 
-      requiredWatchSeconds: template.requiredWatchSeconds ?? undefined,
+      requiredWatchSeconds: template.requiredWatchSeconds ?? 0,
           status: data.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
         },
-      } as any,
+      },
     },
   });
 
