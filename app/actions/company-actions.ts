@@ -31,6 +31,13 @@ const companyCampaignSchema = z.object({
 const submitReviewSchema = z.object({
   campaignId: z.string().min(1),
 });
+const companyChannelsSchema = z.object({
+  instagramUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
+  tiktokUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
+  facebookUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
+  googleBusinessUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
+  websiteUrl: z.string().url("URL invalida.").optional().or(z.literal("")),
+});
 
 function objectiveTemplate(objective: z.infer<typeof companyCampaignSchema>["objective"]) {
   if (objective === "WATCH_VIDEO" || objective === "VIEW_STORY") {
@@ -393,4 +400,34 @@ export async function requestCompanyUpgradeFormAction(): Promise<void> {
 
 export async function requestCompanyTokensTopUpFormAction(): Promise<void> {
   await requestCompanyTokensTopUpAction();
+}
+
+export async function updateCompanyChannelsAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const company = await requireCompany();
+  const parsed = companyChannelsSchema.safeParse({
+    instagramUrl: formData.get("instagramUrl"),
+    tiktokUrl: formData.get("tiktokUrl"),
+    facebookUrl: formData.get("facebookUrl"),
+    googleBusinessUrl: formData.get("googleBusinessUrl"),
+    websiteUrl: formData.get("websiteUrl"),
+  });
+
+  if (!parsed.success) {
+    return { ok: false, message: "Confira os links informados.", fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  await db.company.update({
+    where: { id: company.id },
+    data: {
+      instagramUrl: parsed.data.instagramUrl || "",
+      tiktokUrl: parsed.data.tiktokUrl || "",
+      facebookUrl: parsed.data.facebookUrl || "",
+      googleBusinessUrl: parsed.data.googleBusinessUrl || "",
+      websiteUrl: parsed.data.websiteUrl || "",
+    },
+  });
+
+  revalidatePath("/rela/configuracoes");
+  revalidatePath("/rela/dashboard");
+  return { ok: true, message: "Canais de divulgacao atualizados." };
 }

@@ -11,6 +11,7 @@ const BLOCKED_ACCOUNT_COOKIE = "okg_blocked_account";
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isEmpresaArea = pathname.startsWith("/empresa");
+  const isRelaArea = pathname.startsWith("/rela");
   const isUsuarioArea = pathname.startsWith("/usuario");
 
   if (isUsuarioArea && request.cookies.get(BLOCKED_ACCOUNT_COOKIE)?.value === "1") {
@@ -47,6 +48,25 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  if (isRelaArea) {
+    const isPublicRelaRoute = pathname === "/rela" || pathname === "/rela/login" || pathname === "/rela/cadastro";
+    if (isPublicRelaRoute) return NextResponse.next();
+
+    const companyToken = request.cookies.get(COMPANY_SESSION_COOKIE)?.value;
+    if (companyToken) {
+      const companySession = await verifyCompanySession(companyToken);
+      if (companySession) return NextResponse.next();
+    }
+
+    const token = request.cookies.get(SESSION_COOKIE)?.value;
+    if (token) {
+      const session = await verifySession(token);
+      if (session) return NextResponse.next();
+    }
+
+    return NextResponse.redirect(new URL("/rela/login", request.url));
+  }
+
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const hasInvalidCustomSession = Boolean(token);
 
@@ -78,5 +98,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/usuario/:path*", "/admin/:path*", "/empresa/:path*"],
+  matcher: ["/usuario/:path*", "/admin/:path*", "/empresa/:path*", "/rela/:path*"],
 };

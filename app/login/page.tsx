@@ -1,10 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { BrandLogo } from "@/components/ui/BrandLogo";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const user = await getCurrentUser();
+  if (user?.role === "ADMIN") redirect("/admin");
+  if (user?.role === "COMPANY") redirect("/rela/login");
+  if (user?.role === "USER") redirect("/usuario/dashboard");
+
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
   return (

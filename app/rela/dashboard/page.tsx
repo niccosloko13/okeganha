@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { RelaMetricCard } from "@/components/rela/RelaMetricCard";
+import { RelaIconPerformance, RelaIconTokens } from "@/components/rela/RelaIcons";
 import { RelaShell } from "@/components/rela/RelaShell";
 import { requireRelaCompany } from "@/lib/rela-auth";
 import { db } from "@/lib/db";
@@ -8,6 +9,7 @@ import { formatMoney } from "@/lib/money";
 
 export default async function RelaDashboardPage() {
   const company = await requireRelaCompany();
+  const connectedChannels = [company.instagramUrl, company.tiktokUrl, company.facebookUrl, company.googleBusinessUrl, company.websiteUrl].filter((value) => value && value.trim().length > 0).length;
   const [activeCampaigns, underReview, approvedSubmissions] = await Promise.all([
     db.campaign.count({ where: { companyId: company.id, status: "ACTIVE" } }),
     db.campaign.count({ where: { companyId: company.id, reviewStatus: "UNDER_REVIEW" } }),
@@ -27,6 +29,26 @@ export default async function RelaDashboardPage() {
         <RelaMetricCard label="Tokens disponiveis" value={String(company.tokensBalance)} helper={`Plano ${company.plan}`} trend="ciclo em andamento" />
         <RelaMetricCard label="Engajamentos validados" value={String(approvedSubmissions)} helper="Provas aprovadas pelo fluxo" trend="+12.1% semanal" />
         <RelaMetricCard label="Orcamento atual" value={formatMoney(company.tokensMonthlyLimit * 100)} helper="Capacidade estimada do ciclo" trend="uso eficiente" />
+      </section>
+
+      <section className="grid gap-3 lg:grid-cols-3">
+        <article className="rounded-3xl border border-[#2a3c5f] bg-[#121a2f]/85 p-5">
+          <p className="text-xs uppercase tracking-wide text-[#8fb0dc]">Proximo passo recomendado</p>
+          <h2 className="mt-2 text-xl font-black text-[#e8f2ff]">Lancar campanha com objetivo claro</h2>
+          <p className="mt-2 text-sm text-[#9eb5d8]">Defina plataforma, orcamento e regra de entrega para iniciar tracao regional com previsibilidade.</p>
+          <Link href="/rela/campanhas/nova" className="mt-4 inline-flex rounded-xl bg-gradient-to-r from-[#3c76ff] to-[#21b8d9] px-4 py-3 text-sm font-bold text-white">Criar campanha</Link>
+        </article>
+        <article className="rounded-3xl border border-[#2a3c5f] bg-[#121a2f]/85 p-5">
+          <div className="flex items-center gap-2"><RelaIconTokens className="h-5 w-5" /><p className="text-xs uppercase tracking-wide text-[#8fb0dc]">Canais conectados</p></div>
+          <p className="mt-2 text-3xl font-black text-[#e8f2ff]">{connectedChannels}/5</p>
+          <p className="mt-2 text-sm text-[#9eb5d8]">Conecte Instagram, TikTok, Facebook, Google Business e site para ampliar distribuicao.</p>
+          <Link href="/rela/configuracoes" className="mt-4 inline-flex rounded-xl border border-[#37507d] px-4 py-3 text-sm font-semibold text-[#cde2ff]">Configurar canais</Link>
+        </article>
+        <article className="rounded-3xl border border-[#2a3c5f] bg-[#121a2f]/85 p-5">
+          <div className="flex items-center gap-2"><RelaIconPerformance className="h-5 w-5" /><p className="text-xs uppercase tracking-wide text-[#8fb0dc]">Status operacional</p></div>
+          <p className="mt-2 text-lg font-bold text-[#e8f2ff]">{company.status}</p>
+          <p className="mt-2 text-sm text-[#9eb5d8]">Pipeline: {underReview} em analise, {activeCampaigns} ativas, {approvedSubmissions} entregas validadas.</p>
+        </article>
       </section>
 
       <section className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">

@@ -37,10 +37,6 @@ export default async function RelaStatusPage() {
   const company = await db.company.findUnique({ where: { id: user.companyId } });
   if (!company) redirect("/rela/login");
 
-  if (company.status === "ACTIVE") {
-    redirect("/rela/dashboard");
-  }
-
   const meta = statusMeta[company.status];
 
   return (
@@ -61,7 +57,11 @@ export default async function RelaStatusPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/rela/login" className="rounded-xl border border-[#37507d] bg-[#121a2f] px-4 py-3 text-sm font-semibold text-[#cde2ff]">Voltar ao login</Link>
+            {company.status === "ACTIVE" ? (
+              <Link href="/rela/dashboard" className="rounded-xl border border-[#37507d] bg-[#121a2f] px-4 py-3 text-sm font-semibold text-[#cde2ff]">Ir para dashboard</Link>
+            ) : (
+              <Link href="/rela/login" className="rounded-xl border border-[#37507d] bg-[#121a2f] px-4 py-3 text-sm font-semibold text-[#cde2ff]">Voltar ao login</Link>
+            )}
             <Link href="/rela/suporte" className="rounded-xl bg-gradient-to-r from-[#3c76ff] to-[#21b8d9] px-4 py-3 text-sm font-bold text-white">Falar com suporte</Link>
           </div>
         </div>

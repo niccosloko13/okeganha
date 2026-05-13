@@ -1,5 +1,15 @@
 import Link from "next/link";
 import { companyLogoutRelaAction } from "@/app/actions/company-actions";
+import {
+  RelaIconCampaigns,
+  RelaIconDashboard,
+  RelaIconFinance,
+  RelaIconLogout,
+  RelaIconPlus,
+  RelaIconReports,
+  RelaIconSettings,
+  RelaIconSupport,
+} from "@/components/rela/RelaIcons";
 
 type RelaShellProps = {
   title: string;
@@ -11,13 +21,13 @@ type RelaShellProps = {
 };
 
 const navItems = [
-  { href: "/rela/dashboard", label: "Dashboard" },
-  { href: "/rela/campanhas", label: "Campanhas" },
-  { href: "/rela/campanhas/nova", label: "Nova campanha" },
-  { href: "/rela/relatorios", label: "Relatorios" },
-  { href: "/rela/financeiro", label: "Financeiro" },
-  { href: "/rela/configuracoes", label: "Configuracoes" },
-  { href: "/rela/suporte", label: "Suporte" },
+  { href: "/rela/dashboard", label: "Dashboard", icon: RelaIconDashboard },
+  { href: "/rela/campanhas", label: "Campanhas", icon: RelaIconCampaigns },
+  { href: "/rela/campanhas/nova", label: "Nova campanha", icon: RelaIconPlus },
+  { href: "/rela/relatorios", label: "Relatorios", icon: RelaIconReports },
+  { href: "/rela/financeiro", label: "Financeiro", icon: RelaIconFinance },
+  { href: "/rela/configuracoes", label: "Configuracoes", icon: RelaIconSettings },
+  { href: "/rela/suporte", label: "Suporte", icon: RelaIconSupport },
 ];
 
 export function RelaShell({ title, subtitle, children, companyName, companyStatus, tokenBalance }: RelaShellProps) {
@@ -38,12 +48,12 @@ export function RelaShell({ title, subtitle, children, companyName, companyStatu
           <nav className="mt-5 space-y-2 text-sm">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} className="block rounded-xl border border-transparent px-3 py-2 text-[#d3def4] hover:border-[#2c3f66] hover:bg-[#151f36]">
-                {item.label}
+                <span className="flex items-center gap-2"><item.icon className="h-4 w-4" />{item.label}</span>
               </Link>
             ))}
             <form action={companyLogoutRelaAction}>
               <button type="submit" className="mt-2 block w-full rounded-xl border border-[#385380] px-3 py-2 text-left text-[#c4d8f7] hover:bg-[#16213a]">
-                Sair
+                <span className="flex items-center gap-2"><RelaIconLogout className="h-4 w-4" />Sair</span>
               </button>
             </form>
           </nav>
