@@ -65,7 +65,7 @@ export async function requireAdmin() {
     await logUserActivity(user.id, "SUSPICIOUS_ACTIVITY", { reason: "FORBIDDEN_ROUTE_ACCESS", targetArea: "admin" });
     await addRiskEvent(user.id, "HIGH", "Tentativa de acesso indevido à área administrativa.", { targetArea: "admin" });
     await evaluateAndHandleUserRisk(user.id);
-    redirect("/empresa/acesso");
+    redirect("/rela/login");
   }
 
   if (user.role !== "ADMIN") {
@@ -96,7 +96,7 @@ export async function requireRegularUser() {
     await logUserActivity(user.id, "SUSPICIOUS_ACTIVITY", { reason: "FORBIDDEN_ROUTE_ACCESS", targetArea: "usuario" });
     await addRiskEvent(user.id, "HIGH", "Tentativa de acesso indevido à área de usuário comum.", { targetArea: "usuario" });
     await evaluateAndHandleUserRisk(user.id);
-    redirect("/empresa/acesso");
+    redirect("/rela/login");
   }
 
   return user;

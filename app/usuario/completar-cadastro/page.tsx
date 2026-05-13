@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/auth";
 export default async function CompletarCadastroPage() {
   const user = await requireUser();
 
-  if (user.role === "COMPANY") redirect("/empresa/status");
+  if (user.role === "COMPANY") redirect("/rela/status");
   if (user.role === "ADMIN") redirect("/admin/dashboard");
   if (user.onboardingCompleted) redirect("/usuario/dashboard");
 

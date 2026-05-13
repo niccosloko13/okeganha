@@ -113,7 +113,7 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
     }
 
     if (user.role === "COMPANY") {
-      redirect("/empresa/acesso");
+      redirect("/rela/login");
     }
 
     if (!user.onboardingCompleted) {

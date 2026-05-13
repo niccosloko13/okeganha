@@ -17,12 +17,12 @@ Deixar o OKEGANHA focado em usuario final, removendo exposicao visual e copy B2B
 - Home publica:
   - copy alterada de "campanhas ativas" para "missoes ativas".
 - Auth em `/login`:
-  - COMPANY agora e redirecionado para ponto unico legado: `/empresa/acesso`.
+  - COMPANY agora e redirecionado para fluxo oficial empresarial: `/rela/login`.
   - Evita qualquer queda no fluxo do usuario final.
 - Guards de auth (acesso indevido de COMPANY em area USER/ADMIN):
-  - redirecionamento padronizado para `/empresa/acesso`.
+  - redirecionamento padronizado para `/rela/login` (fluxo oficial RELA).
 
-## O que foi mantido como legado para RELA
+## O que foi mantido como legado tecnico temporario
 - Rotas `/empresa/*` continuam operacionais (nao removidas).
 - Backend de empresa/campanha/tarefa mantido.
 - Modelos `Company`, `Campaign`, `Task`, `TaskSubmission` e afins mantidos.
@@ -37,10 +37,6 @@ Deixar o OKEGANHA focado em usuario final, removendo exposicao visual e copy B2B
   - Redes
   - Sair
 
-## Pendencias antes de iniciar /rela
-- Criar rotas dedicadas:
-  - `/rela`
-  - `/rela/login`
-  - `/rela/cadastro`
-- Migrar fluxo legado `/empresa/acesso` para `/rela/login`.
+## Pendencias apos migracao para RELA
+- Consolidar deprecacao final de `/empresa/(painel)/*` quando a migracao visual e funcional estiver 100% concluida.
 - Consolidar cookies/sessoes separadas por contexto (USER/COMPANY/ADMIN), conforme plano tecnico.

@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/money";
 export default async function PerfilPage() {
   const user = await requireUser();
 
-  if (user.role === "COMPANY") redirect("/empresa/status");
+  if (user.role === "COMPANY") redirect("/rela/status");
   if (user.role === "ADMIN") redirect("/admin/dashboard");
 
   const available = await getWalletAvailableBalance(user.id);

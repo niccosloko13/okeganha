@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { companyLogoutRelaAction } from "@/app/actions/company-actions";
 
 type RelaShellProps = {
   title: string;
@@ -40,9 +41,11 @@ export function RelaShell({ title, subtitle, children, companyName, companyStatu
                 {item.label}
               </Link>
             ))}
-            <Link href="/empresa/acesso" className="mt-2 block rounded-xl border border-[#385380] px-3 py-2 text-[#c4d8f7] hover:bg-[#16213a]">
-              Sair
-            </Link>
+            <form action={companyLogoutRelaAction}>
+              <button type="submit" className="mt-2 block w-full rounded-xl border border-[#385380] px-3 py-2 text-left text-[#c4d8f7] hover:bg-[#16213a]">
+                Sair
+              </button>
+            </form>
           </nav>
         </aside>
         <main className="space-y-4">

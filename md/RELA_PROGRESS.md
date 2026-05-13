@@ -1,39 +1,44 @@
 # RELA PROGRESS
 
-## Fase 1 iniciada (dentro do app principal)
+## Status atual
 
-Escopo aplicado sem criar projeto novo e sem alterar OKEGANHA usuario:
+RELA Business esta ativo dentro do app principal como fluxo oficial de empresa.
+OKEGANHA usuario final permanece separado.
+Admin interno permanece separado.
 
-- `app/rela/page.tsx` criado
-- `app/rela/login/page.tsx` criado
-- `app/rela/dashboard/page.tsx` criado
-- `components/rela/RelaShell.tsx` criado
-- `components/rela/RelaMetricCard.tsx` criado
+## Rotas RELA ativas
 
-## Direcao visual aplicada
+- `/rela`
+- `/rela/login`
+- `/rela/cadastro`
+- `/rela/status`
+- `/rela/dashboard`
+- `/rela/campanhas`
+- `/rela/campanhas/nova`
+- `/rela/relatorios`
+- `/rela/financeiro`
+- `/rela/configuracoes`
+- `/rela/suporte`
 
-- premium B2B
-- dark elegant
-- foco em metricas, campanhas e performance
-- sem linguagem gamer (sem XP/energia/caixa)
+## Fluxo auth empresarial aplicado
 
-## Copy aplicada
+- Login COMPANY em `/rela/login`
+- Cadastro COMPANY em `/rela/cadastro`
+- COMPANY `ACTIVE` -> `/rela/dashboard`
+- COMPANY `PENDING/REJECTED/BLOCKED` -> `/rela/status`
+- USER tentando acessar RELA -> `/usuario/dashboard`
+- ADMIN tentando acessar RELA -> `/admin`
 
-- campanhas locais
-- engajamento verificado
-- prova de entrega
-- metricas claras
-- crescimento regional
+## Legado tecnico temporario
 
-## Legado preservado
+- `/empresa/acesso` -> `/rela/login`
+- `/empresa/login` -> `/rela/login`
+- `/empresa/status` -> `/rela/status`
+- `/empresa` -> `/rela/dashboard`
+- `/empresa/(painel)/*` mantido temporariamente para compatibilidade operacional.
 
-- `/empresa/*` mantido sem alteracao destrutiva
-- backend atual compartilhado preservado
-- OKEGANHA usuario final nao modificado nesta fase RELA
+## Proximos passos
 
-## Proximos passos recomendados
-
-1. Conectar `/rela/login` ao fluxo auth COMPANY com guard dedicado.
-2. Criar `/rela/cadastro` e onboarding empresarial alinhado ao legado.
-3. Adicionar rotas reais `/rela/campanhas`, `/rela/relatorios`, `/rela/financeiro`, `/rela/configuracoes`.
-4. Migrar gradualmente links de `/empresa/*` para `/rela/*` mantendo redirecionamentos de compatibilidade.
+1. Migrar visual restante de `/empresa/(painel)/*` para padrao RELA.
+2. Encerrar legado `/empresa/*` quando operacao estiver 100% estabilizada em `/rela/*`.
+3. Atualizar toda documentacao operacional para RELA como padrao definitivo de empresa.

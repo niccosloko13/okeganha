@@ -1,4 +1,4 @@
-﻿# OKEGANHA-DOCS-CONSOLIDADO.md
+# OKEGANHA-DOCS-CONSOLIDADO.md
 
 > Documento único consolidado para handoff técnico e implementação.
 
@@ -62,10 +62,10 @@ node scripts/reset-password.js conta.empresa@okeganha.com Empresa12345
 
 ## Fluxo público da empresa
 
-- Empresa acessa `/empresa/acesso` para criar conta.
+- Empresa acessa `/rela/login` para criar conta.
 - Conta entra como `PENDING` e aparece em `/admin/empresas`.
 - Admin aprova, reprova ou bloqueia.
-- Somente empresa `ACTIVE` acessa `/empresa/dashboard`.
+- Somente empresa `ACTIVE` acessa `/rela/dashboard`.
 
 
 ---
@@ -119,7 +119,7 @@ node scripts/reset-password.js conta.empresa@okeganha.com Empresa12345
 - Usuário (`/usuario/*`)
 - Admin (`/admin/*`)
 - Empresa (`/empresa/*`)
-- Landing + autenticação pública (`/`, `/login`, `/cadastro`, `/empresa/acesso`)
+- Landing + autenticação pública (`/`, `/login`, `/cadastro`, `/rela/login`)
 
 ## Rotas de usuário
 
@@ -147,12 +147,12 @@ node scripts/reset-password.js conta.empresa@okeganha.com Empresa12345
 
 ## Rotas de empresa
 
-- `/empresa/acesso`
-- `/empresa/status`
-- `/empresa/dashboard`
-- `/empresa/campanhas`
-- `/empresa/campanhas/nova`
-- `/empresa/plano`
+- `/rela/login`
+- `/rela/status`
+- `/rela/dashboard`
+- `/rela/campanhas`
+- `/rela/campanhas/nova`
+- `/rela/financeiro`
 
 ## Seed de teste
 
@@ -326,7 +326,7 @@ Roles no `User`:
 Regras atuais:
 - `/usuario/*` só para `USER` (`requireRegularUser`).
 - `ADMIN` em área de usuário é redirecionado para `/admin/dashboard`.
-- `COMPANY` em área de usuário é redirecionado para `/empresa/dashboard` (se ACTIVE) ou `/empresa/status`.
+- `COMPANY` em área de usuário é redirecionado para `/rela/dashboard` (se ACTIVE) ou `/rela/status`.
 - `/admin/*` exige `ADMIN`.
 - Sessão bloqueada: usuário `BLOCKED` é redirecionado para `/conta/bloqueada` e sessão é limpa.
 
@@ -346,7 +346,7 @@ Arquivos-chave:
 - Saque com validações + risco
 
 ### 3.2 Empresa
-- Cadastro público (`/empresa/acesso`), status inicial `PENDING`
+- Cadastro público (`/rela/login`), status inicial `PENDING`
 - Admin aprova/reprova/bloqueia
 - Dashboard/plano/tokens
 - Criação de campanha (intenção) e revisão operacional no admin
@@ -820,7 +820,7 @@ Passos:
 
 ## Criar empresa pública
 
-1. Abra `http://localhost:3000/empresa/acesso`.
+1. Abra `http://localhost:3000/rela/login`.
 2. Vá na aba **Criar conta empresa**.
 3. Preencha os campos obrigatórios.
 
@@ -833,7 +833,7 @@ Ao enviar com sucesso:
 
 - a empresa é criada com status `PENDING`,
 - o usuário COMPANY é criado com senha hash (nunca texto puro),
-- o sistema redireciona para `/empresa/status`.
+- o sistema redireciona para `/rela/status`.
 
 ## Aprovação admin
 

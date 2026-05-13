@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CompanyLoginForm } from "@/components/empresa/CompanyLoginForm";
+import { RelaLoginForm } from "@/components/rela/RelaLoginForm";
 import { redirectIfAuthenticatedAwayFromRelaAuth } from "@/lib/rela-auth";
 
 export default async function RelaLoginPage() {
@@ -13,13 +13,9 @@ export default async function RelaLoginPage() {
           <h1 className="mt-3 text-3xl font-black text-[#ebf3ff]">Entrar</h1>
           <p className="mt-2 text-sm text-[#9fb6d8]">Acesse o painel de campanhas locais e performance.</p>
 
-          <div className="mt-6">
-            <CompanyLoginForm />
-          </div>
+          <div className="mt-6"><RelaLoginForm /></div>
 
-          <p className="mt-4 text-center text-xs text-[#8ea6cb]">
-            Fase 1 visual ativa. Fluxo completo de auth empresarial sera conectado ao legado em seguida.
-          </p>
+          <p className="mt-4 text-center text-xs text-[#8ea6cb]">Acesso empresarial com roteamento dedicado por status da conta.</p>
         </div>
 
         <p className="mt-4 text-center text-xs text-[#7f96bc]">

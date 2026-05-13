@@ -24,7 +24,7 @@ export async function requireRelaCompany() {
     ? await db.company.findUnique({ where: { id: user.companyId } })
     : null;
 
-  if (!company) redirect("/empresa/acesso");
-  if (company.status !== "ACTIVE") redirect("/empresa/status");
+  if (!company) redirect("/rela/login");
+  if (company.status !== "ACTIVE") redirect("/rela/status");
   return company;
 }

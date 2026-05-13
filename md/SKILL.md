@@ -1,4 +1,4 @@
-﻿# OKEGANHA — SKILL.md (Contexto Completo para Próxima Agente)
+# OKEGANHA — SKILL.md (Contexto Completo para Próxima Agente)
 
 Este documento resume o estado atual do sistema OKEGANHA para acelerar onboarding de uma próxima agente técnica.
 
@@ -6,7 +6,7 @@ Este documento resume o estado atual do sistema OKEGANHA para acelerar onboardin
 
 OKE GANHA é uma plataforma com três áreas principais:
 - Usuário final (`/usuario/*`): encontra campanhas, executa tarefas, envia comprovação, acompanha carteira e solicita saque.
-- Empresa (`/empresa/*`): cria intenção de campanha e usa plano/tokens.
+- Empresa (RELA Business, `/rela/*`) [com `/empresa/*` como legado tecnico temporario]: cria intenção de campanha e usa plano/tokens.
 - Admin (`/admin/*`): opera o negócio (aprovações, segurança, campanhas, saques, usuários, empresas).
 
 Stack:
@@ -24,7 +24,7 @@ Roles no `User`:
 Regras atuais:
 - `/usuario/*` só para `USER` (`requireRegularUser`).
 - `ADMIN` em área de usuário é redirecionado para `/admin/dashboard`.
-- `COMPANY` em área de usuário é redirecionado para `/empresa/dashboard` (se ACTIVE) ou `/empresa/status`.
+- `COMPANY` em área de usuário é redirecionado para `/rela/dashboard` (se ACTIVE) ou `/rela/status`.
 - `/admin/*` exige `ADMIN`.
 - Sessão bloqueada: usuário `BLOCKED` é redirecionado para `/conta/bloqueada` e sessão é limpa.
 
@@ -44,7 +44,7 @@ Arquivos-chave:
 - Saque com validações + risco
 
 ### 3.2 Empresa
-- Cadastro público (`/empresa/acesso`), status inicial `PENDING`
+- Cadastro público (`/rela/login`), status inicial `PENDING`
 - Admin aprova/reprova/bloqueia
 - Dashboard/plano/tokens
 - Criação de campanha (intenção) e revisão operacional no admin

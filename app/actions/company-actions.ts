@@ -73,6 +73,7 @@ function objectiveTemplate(objective: z.infer<typeof companyCampaignSchema>["obj
 }
 
 export async function companyLoginAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const source = formData.get("source") === "rela" ? "rela" : "empresa";
   const parsed = companyLoginSchema.safeParse({
     email: formData.get("email"), password: formData.get("password"),
   });
@@ -102,10 +103,14 @@ export async function companyLoginAction(_prevState: ActionState, formData: Form
   if (company.status === "ACTIVE") {
     redirect("/rela/dashboard");
   }
+  if (source === "rela") {
+    redirect("/rela/status");
+  }
   redirect("/empresa/status");
 }
 
 export async function companyRegisterAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const source = formData.get("source") === "rela" ? "rela" : "empresa";
   const parsed = companyRegisterSchema.safeParse({
     tradeName: formData.get("tradeName"), legalName: formData.get("legalName"), cnpj: formData.get("cnpj"), responsibleName: formData.get("responsibleName"), responsibleWhatsapp: formData.get("responsibleWhatsapp"), email: formData.get("email"), password: formData.get("password"), city: formData.get("city"), neighborhood: formData.get("neighborhood"), category: formData.get("category"), instagramUrl: formData.get("instagramUrl"), tiktokUrl: formData.get("tiktokUrl"), facebookUrl: formData.get("facebookUrl"), googleBusinessUrl: formData.get("googleBusinessUrl"), websiteUrl: formData.get("websiteUrl"),
   });
@@ -181,16 +186,29 @@ export async function companyRegisterAction(_prevState: ActionState, formData: F
 
   await createCompanySession(company.id, company.email);
   revalidatePath("/admin/empresas");
+  if (source === "rela") {
+    redirect("/rela/status");
+  }
   redirect("/empresa/status");
 }
 
 export async function companyLogoutAction() {
+  const to = "/empresa/login";
   if (await isImpersonating()) {
     await stopImpersonation();
     redirect("/admin/empresas");
   }
   await clearCompanySession();
-  redirect("/empresa/login");
+  redirect(to);
+}
+
+export async function companyLogoutRelaAction() {
+  if (await isImpersonating()) {
+    await stopImpersonation();
+    redirect("/admin/empresas");
+  }
+  await clearCompanySession();
+  redirect("/rela/login");
 }
 
 export async function createCompanyCampaignAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {

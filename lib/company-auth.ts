@@ -57,12 +57,12 @@ export async function getCurrentCompany() {
 
 export async function requireCompany() {
   const company = await getCurrentCompany();
-  if (!company) redirect("/empresa/login");
+  if (!company) redirect("/rela/login");
   if (company.status !== "ACTIVE") {
     if (await isImpersonating()) {
       redirect("/admin/empresas");
     }
-    redirect("/empresa/status");
+    redirect("/rela/status");
   }
   return company;
 }
